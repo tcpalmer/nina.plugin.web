@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+
+	<OutputType>Library</OutputType>
+  
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="NINA.Astrometry" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NINA.Core" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NINA.Equipment" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NINA.Image" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NINA.Plugin" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NINA.WPF.Base" Version="2.0.0.2021-beta" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="coverlet.collector" Version="3.1.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\NINA.Plugin.Web\NINA.Plugin.Web.csproj" />
+	</ItemGroup>
+
+</Project>
