@@ -272,6 +272,7 @@
     <Compile Include="History\SessionHistory.cs" />
     <Compile Include="History\SessionHistoryManager.cs" />
     <Compile Include="Http\HttpServerInstance.cs" />
+    <Compile Include="Http\HttpSetup.cs" />
     <Compile Include="ImageSaveWatcher.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>

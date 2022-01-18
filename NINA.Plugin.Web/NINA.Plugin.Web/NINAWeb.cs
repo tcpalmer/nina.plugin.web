@@ -1,13 +1,14 @@
 ﻿using NINA.Core.Utility;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
-using Web.NINAPlugin.Properties;
+using NINA.WPF.Base.Interfaces.Mediator;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Runtime.CompilerServices;
-using Web.NINAPlugin.Http;
 using System.Threading.Tasks;
-using NINA.WPF.Base.Interfaces.Mediator;
+using Web.NINAPlugin.Http;
+using Web.NINAPlugin.Properties;
 
 namespace Web.NINAPlugin {
 
@@ -22,9 +23,18 @@ namespace Web.NINAPlugin {
                 CoreUtil.SaveSettings(Settings.Default);
             }
 
+            try {
+                new HttpSetup().Initialize();
+            }
+            catch (Exception ex) {
+                Logger.Error($"failed to initialize the web client: {ex}");
+                return;
+            }
+
             HttpServerInstance.Start();
             new ImageSaveWatcher(imageSaveMediator);
         }
+
 
         public override Task Teardown() {
             HttpServerInstance.Stop();
