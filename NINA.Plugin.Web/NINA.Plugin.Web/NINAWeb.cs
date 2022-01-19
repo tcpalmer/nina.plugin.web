@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Web.NINAPlugin.History;
 using Web.NINAPlugin.Http;
 using Web.NINAPlugin.Properties;
 
@@ -26,9 +27,11 @@ namespace Web.NINAPlugin {
             }
 
             Settings.Default.PropertyChanged += SettingsChanged;
-            setWebUrls();
 
             try {
+                setWebUrls();
+                new SessionHistoryManager().PurgeHistoryOlderThan(Settings.Default.PurgeDays);
+
                 new HttpSetup().Initialize();
                 if (WebPluginEnabled) {
                     HttpServerInstance.SetPort(WebServerPort);
@@ -109,6 +112,8 @@ namespace Web.NINAPlugin {
 
                 case "WebPluginEnabled":
                     if (Settings.Default.WebPluginEnabled) {
+                        // TODO: we have prep here: purge
+                        HttpServerInstance.SetPort(Settings.Default.WebServerPort);
                         HttpServerInstance.Start();
                     }
                     else {

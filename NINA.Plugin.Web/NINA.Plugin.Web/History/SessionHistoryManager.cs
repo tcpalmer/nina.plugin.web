@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NINA.Core.Utility;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -64,10 +65,20 @@ namespace Web.NINAPlugin.History {
         }
 
         public void PurgeHistoryOlderThan(int days) {
-            Logger.Debug($"purging session history older than {days} days");
-            Logger.Warning("not yet purging old session history for web plugin");
-            string sessionsRoot = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT);
-            // TODO: load all subdirs of sessionsRoot matching yyyyMMdd-HHmmss, convert to date, purge if older than days
+            days = days < 0 ? 0 : days;
+
+            Logger.Info($"purging web session history older than {days} days");
+            string[] sessionDirs = GetSessionHistoryDirectories();
+
+            DateTime compareDate = DateTime.Now.AddDays(-1*days);
+            foreach (string dir in sessionDirs) {
+                DateTime sessionDate = DateTime.ParseExact(Path.GetFileName(dir), "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+                int diff = (sessionDate - compareDate).Days;
+                if (diff <= 0) {
+                    Logger.Info($"purging old web session history: {dir}");
+                    Directory.Delete(dir, true);
+                }
+            }
         }
 
         public string GetSessionDirectoryName(SessionHistory sessionHistory) {
@@ -75,8 +86,7 @@ namespace Web.NINAPlugin.History {
         }
 
         public SessionList GetSessionList() {
-            string sessionsHome = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME, HttpSetup.SESSIONS_ROOT);
-            string[] sessionDirs = Directory.GetDirectories(sessionsHome);
+            string[] sessionDirs = GetSessionHistoryDirectories();
             SessionList sessionList = new SessionList();
 
             foreach (string dir in sessionDirs) {
@@ -127,6 +137,11 @@ namespace Web.NINAPlugin.History {
             }
 
             return sessionHome;
+        }
+
+        private string[] GetSessionHistoryDirectories() {
+            string sessionsHome = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME, HttpSetup.SESSIONS_ROOT);
+            return Directory.GetDirectories(sessionsHome);
         }
 
         private SessionHistory ReadSessionHistory(string key) {

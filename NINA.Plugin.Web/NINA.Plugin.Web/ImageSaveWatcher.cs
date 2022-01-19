@@ -103,10 +103,6 @@ namespace Web.NINAPlugin {
                 case "WebPluginEnabled":
                     WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
                     break;
-                case "PurgeDays":
-                    PurgeDays = Properties.Settings.Default.PurgeDays;
-                    sessionHistoryManager.PurgeHistoryOlderThan(PurgeDays);
-                    break;
             }
         }
 
