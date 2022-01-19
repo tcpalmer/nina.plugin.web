@@ -271,6 +271,7 @@
   <ItemGroup>
     <Compile Include="History\SessionHistory.cs" />
     <Compile Include="History\SessionHistoryManager.cs" />
+    <Compile Include="History\SessionList.cs" />
     <Compile Include="Http\HttpServerInstance.cs" />
     <Compile Include="Http\HttpSetup.cs" />
     <Compile Include="ImageSaveWatcher.cs" />

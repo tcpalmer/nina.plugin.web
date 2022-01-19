@@ -3,14 +3,35 @@ using NINA.Core.Utility;
 using NINA.Plugin;
 using System;
 using System.IO;
+using Web.NINAPlugin.History;
 
 namespace Web.NINAPlugin.Http {
 
     public class HttpSetup {
 
-        static private readonly string WEB_PLUGIN_HOME = "WebPlugin";
-        static private readonly string WEB_CLIENT_DIR = "dist";
+        static public readonly string WEB_PLUGIN_HOME = "WebPlugin";
+
+        static public readonly string WEB_CLIENT_DIR = "dist";
         static private readonly string WEB_CLIENT_VERSION_FILE = "webClientVersion.json";
+
+        static public readonly string SESSIONS_ROOT = "sessions";
+        static public readonly string SESSIONS_LIST_NAME = "sessions.json";
+        static public readonly string THUMBNAILS_ROOT = "thumbnails";
+        static public readonly string SESSION_JSON_NAME = "sessionHistory.json";
+
+        /*
+         * Directory structure:
+         *   %localappdata\NINA\WebPlugin\%
+         *     dist\
+         *       <web client files>
+         *       webClientVersion.json
+         *     sessions\
+         *       sessions.json
+         *       yyyyMMdd-HHmmss\
+         *         sessionHistory.json
+         *           thumbnails\
+         *             <guid>.jpg
+         */
 
         public void Initialize() {
 
@@ -22,11 +43,11 @@ namespace Web.NINAPlugin.Http {
             string pluginVersion = GetType().Assembly.GetName().Version.ToString();
             Logger.Debug($"plugin version: {pluginVersion}");
 
-            // Confirm we can locate our plugin home
+            // Confirm we can locate our plugin installation
             string pluginHome = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, Constants.UserExtensionsFolder, pluginName);
             Logger.Debug($"plugin home: {pluginHome}");
             if (!Directory.Exists(pluginHome)) {
-                throw new Exception($"failed to locate plugin home: {pluginHome} not found, aborting");
+                throw new Exception($"failed to locate plugin home: {pluginHome} not found");
             }
 
             // Create the web server home if not present
@@ -34,6 +55,19 @@ namespace Web.NINAPlugin.Http {
             if (!Directory.Exists(webServerHome)) {
                 Logger.Debug($"creating web server home: {webServerHome}");
                 Directory.CreateDirectory(webServerHome);
+            }
+
+            // Create the web sessions home if not present
+            string sessionsHome = Path.Combine(webServerHome, SESSIONS_ROOT);
+            if (!Directory.Exists(sessionsHome)) {
+                Logger.Debug($"creating web sessions home: {sessionsHome}");
+                Directory.CreateDirectory(sessionsHome);
+            }
+
+            // If no session list exists, create an empty one
+            string sessionListFile = Path.Combine(sessionsHome, SESSIONS_LIST_NAME);
+            if (!File.Exists(sessionListFile)) {
+                new SessionHistoryManager().WriteSessionList(new SessionList());
             }
 
             // If the web client files aren't present, or the version differs, install

@@ -91,13 +91,6 @@ namespace Web.NINAPlugin.History {
             filterName = msg.Filter;
             detectedStars = msg.StarDetectionAnalysis.DetectedStars;
             HFR = msg.StarDetectionAnalysis.HFR;
-            // TODO: REMOVE HACK
-            if (filterName == "") {
-                filterName = "Ha";
-                Random r = new Random();
-                detectedStars = r.Next(1000, 2000);
-                HFR = r.NextDouble() * 3 + 3;
-            }
         }
 
         private string GetFileName(Uri imageUri) {

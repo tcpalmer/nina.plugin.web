@@ -1,4 +1,4 @@
-# New Plugin
+# NINA Web Plugin
 
-## 0.0.0.1 - yyyy-mm-dd
-* Initial test release
+## 1.0.0.0 - 2222-01-21
+* Initial release

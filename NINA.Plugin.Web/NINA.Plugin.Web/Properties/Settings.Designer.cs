@@ -34,5 +34,65 @@ namespace Web.NINAPlugin.Properties {
                 this["UpdateSettings"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool WebPluginEnabled {
+            get {
+                return ((bool)(this["WebPluginEnabled"]));
+            }
+            set {
+                this["WebPluginEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int PurgeDays {
+            get {
+                return ((int)(this["PurgeDays"]));
+            }
+            set {
+                this["PurgeDays"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LocalAddress {
+            get {
+                return ((string)(this["LocalAddress"]));
+            }
+            set {
+                this["LocalAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LocalNetworkAddress {
+            get {
+                return ((string)(this["LocalNetworkAddress"]));
+            }
+            set {
+                this["LocalNetworkAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8080")]
+        public int WebServerPort {
+            get {
+                return ((int)(this["WebServerPort"]));
+            }
+            set {
+                this["WebServerPort"] = value;
+            }
+        }
     }
 }
