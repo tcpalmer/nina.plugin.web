@@ -30,7 +30,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
                     <TextBlock.Text>Web Server Port</TextBlock.Text>
-                    <TextBlock.ToolTip>Set the Web server listen port</TextBlock.ToolTip>
+                    <TextBlock.ToolTip>Set the Web server listen port, change if you have a conflict</TextBlock.ToolTip>
                 </TextBlock>
                 <TextBox
                     MinWidth="40"

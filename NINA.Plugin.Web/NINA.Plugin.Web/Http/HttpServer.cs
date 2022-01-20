@@ -26,10 +26,11 @@ namespace Web.NINAPlugin.Http {
 
         public List<string> GetURLs() {
             List<string> urls = new List<string>();
-            urls.Add($"http://localhost:{port}/{HttpSetup.WEB_CLIENT_DIR}");
+            string urlPort = port == 80 ? "" : $":{port}";
+            urls.Add($"http://localhost{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
 
             if (ip != null) {
-                urls.Add($"http://{ip}:{port}/{HttpSetup.WEB_CLIENT_DIR}");
+                urls.Add($"http://{ip}{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
             }
 
             return urls;
@@ -130,7 +131,7 @@ namespace Web.NINAPlugin.Http {
             NINA.Core.Utility.Logger.Info($"web server log: {logFilePath}");
 
             FileLogger fileLogger = new FileLogger(logFilePath, false) {
-                LogLevel = LogLevel.Trace // TODO: make this a plugin option
+                LogLevel = LogLevel.Info
             };
 
             Swan.Logging.Logger.RegisterLogger(fileLogger);

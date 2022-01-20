@@ -85,7 +85,7 @@ namespace Web.NINAPlugin.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("8080")]
+        [global::System.Configuration.DefaultSettingValueAttribute("80")]
         public int WebServerPort {
             get {
                 return ((int)(this["WebServerPort"]));

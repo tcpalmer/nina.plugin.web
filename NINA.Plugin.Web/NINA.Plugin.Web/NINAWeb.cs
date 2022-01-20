@@ -28,22 +28,29 @@ namespace Web.NINAPlugin {
 
             Settings.Default.PropertyChanged += SettingsChanged;
 
+            InitializePlugin();
+            new ImageSaveWatcher(imageSaveMediator);
+        }
+
+        private void InitializePlugin() {
             try {
                 setWebUrls();
-                new SessionHistoryManager().PurgeHistoryOlderThan(Settings.Default.PurgeDays);
-
                 new HttpSetup().Initialize();
+
+                SessionHistoryManager sessionHistoryManager = new SessionHistoryManager();
+                sessionHistoryManager.PurgeHistoryOlderThan(Settings.Default.PurgeDays);
+                sessionHistoryManager.DeactivateSessions();
+                sessionHistoryManager.InitializeSessionList();
+
                 if (WebPluginEnabled) {
                     HttpServerInstance.SetPort(WebServerPort);
                     HttpServerInstance.Start();
                 }
             }
             catch (Exception ex) {
-                Logger.Error($"failed to initialize the web server: {ex}, aborting");
+                Logger.Error($"failed to initialize the web plugin: {ex}, aborting");
                 return;
             }
-
-            new ImageSaveWatcher(imageSaveMediator);
         }
 
         public override Task Teardown() {
@@ -112,7 +119,6 @@ namespace Web.NINAPlugin {
 
                 case "WebPluginEnabled":
                     if (Settings.Default.WebPluginEnabled) {
-                        // TODO: we have prep here: purge
                         HttpServerInstance.SetPort(Settings.Default.WebServerPort);
                         HttpServerInstance.Start();
                     }
@@ -123,6 +129,7 @@ namespace Web.NINAPlugin {
 
                 case "WebServerPort":
                     setWebUrls();
+                    // Change the port, will auto-restart if already running
                     HttpServerInstance.SetPort(Settings.Default.WebServerPort);
                     break;
             }

@@ -2,16 +2,13 @@
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.ComponentModel;
-using System.IO;
 using Web.NINAPlugin.History;
-using Web.NINAPlugin.Http;
 
 namespace Web.NINAPlugin {
 
     public class ImageSaveWatcher {
 
         private bool WebPluginEnabled;
-        private int PurgeDays;
 
         private bool initialized = false;
         private SessionList sessionList;
@@ -20,7 +17,6 @@ namespace Web.NINAPlugin {
 
         public ImageSaveWatcher(IImageSaveMediator imageSaveMediator) {
             WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
-            PurgeDays = Properties.Settings.Default.PurgeDays;
             Properties.Settings.Default.PropertyChanged += SettingsChanged;
 
             sessionHistoryManager = new SessionHistoryManager();
@@ -51,16 +47,8 @@ namespace Web.NINAPlugin {
             }
         }
 
-        // TODO: we need to do a better job of state management here:
-        //  - if the web server is stopped, seems like we need to end the current session (deactivating live)
-        //    and resetting here.
-        //  - if (re)started, we start a new session
-
         private void initialize() {
-            sessionHistoryManager.PurgeHistoryOlderThan(PurgeDays);
             sessionList = sessionHistoryManager.GetSessionList();
-            // TODO: deactivate really needs to happen as soon as web server starts
-            sessionHistoryManager.DeactivateSessions(sessionList);
             initialized = true;
         }
 

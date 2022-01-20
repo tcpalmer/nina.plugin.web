@@ -96,6 +96,10 @@ namespace Web.NINAPlugin.History {
             return sessionList;
         }
 
+        public void InitializeSessionList() {
+            WriteSessionList(GetSessionList());
+        }
+
         public void WriteSessionList(SessionList sessionList) {
             string sessionsListFile = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME, HttpSetup.SESSIONS_ROOT, HttpSetup.SESSIONS_LIST_NAME);
             if (File.Exists(sessionsListFile)) {
@@ -114,7 +118,8 @@ namespace Web.NINAPlugin.History {
             }
         }
 
-        public void DeactivateSessions(SessionList sessionList) {
+        public void DeactivateSessions() {
+            SessionList sessionList = GetSessionList();
             foreach (Session session in sessionList.sessions) {
                 SessionHistory sessionHistory = ReadSessionHistory(session.key);
                 if (sessionHistory.activeTargetId != null) {

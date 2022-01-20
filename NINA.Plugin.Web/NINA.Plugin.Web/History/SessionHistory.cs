@@ -7,10 +7,8 @@ namespace Web.NINAPlugin.History {
 
     public class SessionHistory {
 
-        private static readonly string WEB_CLIENT_VERSION = "0.1";
-
         public string id { get; set; }
-        public string clientVersion { get; set; }
+        public string pluginVersion { get; set; }
         public DateTime startTime { get; set; }
         public string activeTargetId { get; set; }
         public List<Target> targets { get; set; }
@@ -21,7 +19,7 @@ namespace Web.NINAPlugin.History {
 
         public SessionHistory(DateTime startTime) {
             id = Guid.NewGuid().ToString();
-            clientVersion = WEB_CLIENT_VERSION;
+            pluginVersion = GetType().Assembly.GetName().Version.ToString();
             this.startTime = startTime;
             targets = new List<Target>();
         }
