@@ -5,7 +5,7 @@
     <!--  This data template will be displayed in N.I.N.A. on the options->plugin tab with the datacontext of the TestPlugin instance  -->
     <!--  In order for this datatemplate to be picked correctly, the key has to follow the naming convention of <IPlugin.Name>_Options -->
     <!--  Furthermore the Resource Dictionary has to be exported via code behind export attributes  -->
-    <DataTemplate x:Key="NINA Web_Options">
+    <DataTemplate x:Key="Web Session History Viewer_Options">
         <StackPanel
             Margin="0,10,0,0"
             DataContext="{Binding}"
