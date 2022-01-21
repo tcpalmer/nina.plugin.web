@@ -9,11 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
 		..\LICENSE.txt = ..\LICENSE.txt
-		README-TEMPLATE.md = README-TEMPLATE.md
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NINA.Plugin.Web.Test", "NINA.Plugin.Web.Test\NINA.Plugin.Web.Test.csproj", "{A7BB32AB-2CEA-461D-8BDA-8A661A949242}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NINA.Plugin.Web.Test", "NINA.Plugin.Web.Test\NINA.Plugin.Web.Test.csproj", "{A7BB32AB-2CEA-461D-8BDA-8A661A949242}"
 	ProjectSection(ProjectDependencies) = postProject
 		{141704E0-505C-492C-9E74-3B85F1C05D12} = {141704E0-505C-492C-9E74-3B85F1C05D12}
 	EndProjectSection
