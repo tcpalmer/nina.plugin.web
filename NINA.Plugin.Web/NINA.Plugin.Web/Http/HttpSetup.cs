@@ -9,6 +9,7 @@ namespace Web.NINAPlugin.Http {
 
     public class HttpSetup {
 
+        static public readonly string PLUGIN_HOME = "Web Session History Viewer";
         static public readonly string WEB_PLUGIN_HOME = "WebPlugin";
 
         static public readonly string WEB_CLIENT_DIR = "dist";
@@ -35,9 +36,8 @@ namespace Web.NINAPlugin.Http {
 
         public void Initialize() {
 
-            // The plugin name as installed by NINA under 'Plugins' comes from the plugin manifest
-            // which is pulled from our AssemblyTitle when the manifest is created at plugin package time.
-            string pluginName = GetType().Assembly.GetName().Name;
+            // The plugin name as installed by NINA under 'Plugins'
+            string pluginName = PLUGIN_HOME;
             Logger.Debug($"plugin name: {pluginName}");
 
             string pluginVersion = GetType().Assembly.GetName().Version.ToString();
