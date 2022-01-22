@@ -94,5 +94,17 @@ namespace Web.NINAPlugin.Properties {
                 this["WebServerPort"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HostAddress {
+            get {
+                return ((string)(this["HostAddress"]));
+            }
+            set {
+                this["HostAddress"] = value;
+            }
+        }
     }
 }
