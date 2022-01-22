@@ -75,10 +75,10 @@
 
                     <StackPanel Margin="0,0,0,-5" Orientation="Horizontal">
                         <TextBlock
-                            Width="200"
-                            HorizontalAlignment="Right"
+                            Width="100"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Text="Local Address" />
+                            Text="Local Host" />
                         <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
                             <Hyperlink NavigateUri="{Binding LocalAddress}" RequestNavigate="Hyperlink_RequestNavigate">
                                 <TextBlock VerticalAlignment="Center" Text="{Binding LocalAddress}" />
@@ -86,18 +86,41 @@
                         </TextBlock>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                    <StackPanel Margin="0,0,0,-5" Orientation="Horizontal">
                         <TextBlock
-                            Width="200"
-                            HorizontalAlignment="Right"
+                            Width="100"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Text="Local Network Address" />
+                            Text="IP Address" />
                         <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
                             <Hyperlink NavigateUri="{Binding LocalNetworkAddress}" RequestNavigate="Hyperlink_RequestNavigate">
                                 <TextBlock VerticalAlignment="Center" Text="{Binding LocalNetworkAddress}" />
                             </Hyperlink>
                         </TextBlock>
                     </StackPanel>
+
+                    <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                        <TextBlock
+                            Width="100"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Text="This Host" />
+                        <TextBlock Margin="0,5,0,5" VerticalAlignment="Center">
+                            <Hyperlink NavigateUri="{Binding HostAddress}" RequestNavigate="Hyperlink_RequestNavigate">
+                                <TextBlock VerticalAlignment="Center" Text="{Binding HostAddress}" />
+                            </Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <Separator
+                        Width="20"
+                        Height="5"
+                        Background="Transparent" />
+                    <TextBlock TextWrapping="Wrap">In addition to the URLs above, you should be able to use any domain name that resolves to the IP of the computer running NINA (or is NATed to it).  See network notes below.</TextBlock>
+                    <Separator
+                        Width="20"
+                        Height="5"
+                        Background="Transparent" />
 
                 </StackPanel>
             </GroupBox>

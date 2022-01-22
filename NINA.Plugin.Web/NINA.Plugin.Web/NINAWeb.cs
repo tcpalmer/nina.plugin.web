@@ -54,7 +54,13 @@ namespace Web.NINAPlugin {
         }
 
         public override Task Teardown() {
-            HttpServerInstance.Stop();
+            try {
+                HttpServerInstance.Stop();
+            }
+            catch (Exception ex) {
+                Logger.Error($"failed to stop web server at teardown time: {ex}");
+            }
+
             return base.Teardown();
         }
 
@@ -103,10 +109,26 @@ namespace Web.NINAPlugin {
             }
         }
 
+        public string HostAddress {
+            get => Settings.Default.HostAddress;
+            set {
+                Settings.Default.HostAddress = value;
+                Settings.Default.Save();
+                RaisePropertyChanged();
+            }
+        }
+
         private void setWebUrls() {
-            List<string> urls = new HttpServer(Settings.Default.WebServerPort).GetURLs();
-            LocalAddress = urls.ElementAt(0);
-            LocalNetworkAddress = urls.Count > 1 ? urls.ElementAt(1) : null;
+            Dictionary<string, string> urls = new HttpServer(Settings.Default.WebServerPort).GetURLs();
+            LocalAddress = urls[HttpServer.LOCALHOST_KEY];
+
+            if (urls.ContainsKey(HttpServer.IP_KEY)) {
+                LocalNetworkAddress = urls[HttpServer.IP_KEY];
+            }
+
+            if (urls.ContainsKey(HttpServer.HOST_KEY)) {
+                HostAddress = urls[HttpServer.HOST_KEY];
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

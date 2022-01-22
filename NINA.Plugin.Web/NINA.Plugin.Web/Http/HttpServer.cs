@@ -13,24 +13,26 @@ namespace Web.NINAPlugin.Http {
 
     public class HttpServer {
 
+        public static readonly string HOST_KEY = "HostName";
+        public static readonly string IP_KEY = "IPAddress";
+        public static readonly string LOCALHOST_KEY = "LocalHost";
+
         private WebServer webServer;
         private CancellationTokenSource webServerToken;
         private Thread serverThread;
-        private string ip;
         private int port;
 
         public HttpServer(int port) {
-            ip = GetLocalIPAddress();
             this.port = port;
         }
 
-        public List<string> GetURLs() {
-            List<string> urls = new List<string>();
+        public Dictionary<string, string> GetURLs() {
+            Dictionary<string, string> urls = new Dictionary<string, string>();
+            Dictionary<string, string> names = GetLocalNames();
             string urlPort = port == 80 ? "" : $":{port}";
-            urls.Add($"http://localhost{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
 
-            if (ip != null) {
-                urls.Add($"http://{ip}{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
+            foreach (KeyValuePair<string, string> entry in names) {
+                urls.Add(entry.Key, $"http://{entry.Value}{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
             }
 
             return urls;
@@ -52,32 +54,22 @@ namespace Web.NINAPlugin.Http {
         private void WebServerTask() {
             ConfigureLogging();
 
-            string localUrlPrefix = $"http://localhost:{port}";
-            string localUrl = $"{localUrlPrefix}/{HttpSetup.WEB_CLIENT_DIR}";
+            string localUrl = $"http://localhost:{port}/{HttpSetup.WEB_CLIENT_DIR}";
+            NINA.Core.Utility.Logger.Info($"starting web server, listening at {localUrl}");
 
-            string ipUrlPrefix = null;
-            string ipUrl = null;
-
-            if (ip != null) {
-                ipUrlPrefix = $"http://{ip}:{port}";
-                ipUrl = $"{ipUrlPrefix}/{HttpSetup.WEB_CLIENT_DIR}";
-                NINA.Core.Utility.Logger.Info($"starting web server, listening at {localUrl} and {ipUrl}");
-            }
-            else {
-                NINA.Core.Utility.Logger.Info($"starting web server, listening at {localUrl}");
-            }
-
-            using (webServer = CreateWebServer(localUrlPrefix, ipUrlPrefix)) {
-                webServerToken = new CancellationTokenSource();
-
-                if (ip != null) {
-                    Notification.ShowSuccess($"Web server started, listening at {localUrl} and {ipUrl}");
-                }
-                else {
+            try {
+                using (webServer = CreateWebServer()) {
+                    webServerToken = new CancellationTokenSource();
                     Notification.ShowSuccess($"Web server started, listening at {localUrl}");
+                    webServer.RunAsync(webServerToken.Token).Wait();
                 }
+            }
+            catch (Exception ex) {
+                NINA.Core.Utility.Logger.Error($"failed to start web server: {ex}");
+                Notification.ShowError($"Failed to start web server, see NINA log for details");
 
-                webServer.RunAsync(webServerToken.Token).Wait();
+                NINA.Core.Utility.Logger.Debug("aborting web server thread");
+                serverThread.Abort();
             }
         }
 
@@ -104,22 +96,13 @@ namespace Web.NINAPlugin.Http {
             }
         }
 
-        private WebServer CreateWebServer(string localUrlPrefix, string ipUrlPrefix) {
+        private WebServer CreateWebServer() {
             string webClientPath = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME);
 
-            if (ipUrlPrefix != null) {
-                return new WebServer(o => o
-                        .WithUrlPrefix(localUrlPrefix)
-                        .WithUrlPrefix(ipUrlPrefix)
-                        .WithMode(HttpListenerMode.EmbedIO))
-                        .WithStaticFolder("/", webClientPath, false);
-            }
-            else {
-                return new WebServer(o => o
-                        .WithUrlPrefix(localUrlPrefix)
-                        .WithMode(HttpListenerMode.EmbedIO))
-                        .WithStaticFolder("/", webClientPath, false);
-            }
+            return new WebServer(o => o
+                .WithUrlPrefix($"http://*:{this.port}")
+                .WithMode(HttpListenerMode.EmbedIO))
+                .WithStaticFolder("/", webClientPath, false);
         }
 
         private void ConfigureLogging() {
@@ -137,16 +120,36 @@ namespace Web.NINAPlugin.Http {
             Swan.Logging.Logger.RegisterLogger(fileLogger);
         }
 
-        private string GetLocalIPAddress() {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
+        private Dictionary<string, string> GetLocalNames() {
+            Dictionary<string, string> names = new Dictionary<string, string>();
+            names.Add(LOCALHOST_KEY, "localhost");
+
+            string hostName = Dns.GetHostName();
+            if (!String.IsNullOrEmpty(hostName)) {
+                NINA.Core.Utility.Logger.Debug($"host name: {hostName}");
+                names.Add(HOST_KEY, hostName);
+            }
+
+            string ipv4 = GetIPv4Address();
+            if (!String.IsNullOrEmpty(ipv4)) {
+                names.Add(IP_KEY, ipv4);
+            }
+
+            return names;
+        }
+
+        private string GetIPv4Address() {
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+
             foreach (var ip in host.AddressList) {
                 if (ip.AddressFamily == AddressFamily.InterNetwork) {
                     return ip.ToString();
                 }
             }
 
-            NINA.Core.Utility.Logger.Warning("failed to find local IP address");
+            NINA.Core.Utility.Logger.Debug("no local IPv4 addresses found");
             return null;
         }
     }
+
 }
