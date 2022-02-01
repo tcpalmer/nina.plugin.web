@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Moq;
+using NINA.Profile.Interfaces;
 using NUnit.Framework;
 using System;
 using Web.NINAPlugin.History;
@@ -6,9 +8,25 @@ using Web.NINAPlugin.History;
 namespace Web.NINAPlugin.Test {
     public class SessionHistoryTests {
 
+        private Mock<IProfileService> profileServiceMock = new Mock<IProfileService>();
+
+        [SetUp]
+        public void SetUp() {
+            profileServiceMock.Reset();
+        }
+
         [Test]
         public void TestBasic() {
-            SessionHistory sut = new SessionHistory(DateTime.Now);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.AutoStretchFactor, 1.23);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.BlackClipping, -3.21);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.UnlinkedStretch, true);
+
+            SessionHistory sut = new SessionHistory(DateTime.Now, profileServiceMock.Object);
+
+            sut.stretchOptions.autoStretchFactor.Should().Be(1.23);
+            sut.stretchOptions.blackClipping.Should().Be(-3.21);
+            sut.stretchOptions.unlinkedStretch.Should().Be(true);
+
             sut.targets.Count.Should().Be(0);
             sut.id.Should().NotBeNull();
 
@@ -20,6 +38,7 @@ namespace Web.NINAPlugin.Test {
             ImageRecord r1 = new ImageRecord(TestHelper.GetImageSavedEventArgs(DateTime.Now));
             r1.id.Should().NotBeNull();
             r1.fileName.Should().Be("bar.fits");
+            r1.fullPath.Should().Be("C:/foo/yoyo/bar.fits");
             r1.duration.Should().Be(11.0);
             r1.filterName.Should().Be("Foo");
             r1.detectedStars.Should().Be(1234);

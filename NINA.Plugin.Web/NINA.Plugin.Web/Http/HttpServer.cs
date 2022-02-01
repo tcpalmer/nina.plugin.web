@@ -1,6 +1,8 @@
 ﻿using EmbedIO;
+using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
+using NINA.Image.Interfaces;
 using Swan.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Web.NINAPlugin.Http.Api1020;
 
 namespace Web.NINAPlugin.Http {
 
@@ -20,9 +23,11 @@ namespace Web.NINAPlugin.Http {
         private WebServer webServer;
         private CancellationTokenSource webServerToken;
         private Thread serverThread;
+        private IImageDataFactory imageDataFactory;
         private int port;
 
-        public HttpServer(int port) {
+        public HttpServer(int port, IImageDataFactory imageDataFactory) {
+            this.imageDataFactory = imageDataFactory;
             this.port = port;
         }
 
@@ -102,7 +107,15 @@ namespace Web.NINAPlugin.Http {
             return new WebServer(o => o
                 .WithUrlPrefix($"http://*:{this.port}")
                 .WithMode(HttpListenerMode.EmbedIO))
+                .WithWebApi("/api/1020", m => m
+                    .WithController<ApiV1020Controller>(MyFactory))
+                //.WithWebApi("/api/1020", m => m
+                //   .WithController<ApiV1020Controller>())
                 .WithStaticFolder("/", webClientPath, false);
+        }
+
+        private ApiV1020Controller MyFactory() {
+            return new ApiV1020Controller(new ImageSupport(imageDataFactory));
         }
 
         private void ConfigureLogging() {

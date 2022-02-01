@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using NINA.Core.Utility;
+﻿using NINA.Core.Utility;
 using NINA.Plugin;
 using System;
 using System.IO;
 using Web.NINAPlugin.History;
+using Web.NINAPlugin.Utility;
 
 namespace Web.NINAPlugin.Http {
 
@@ -18,6 +18,7 @@ namespace Web.NINAPlugin.Http {
         static public readonly string SESSIONS_ROOT = "sessions";
         static public readonly string SESSIONS_LIST_NAME = "sessions.json";
         static public readonly string THUMBNAILS_ROOT = "thumbnails";
+        static public readonly string IMAGES_ROOT = "images";
         static public readonly string SESSION_JSON_NAME = "sessionHistory.json";
 
         /*
@@ -31,7 +32,10 @@ namespace Web.NINAPlugin.Http {
          *       yyyyMMdd-HHmmss\
          *         sessionHistory.json
          *           thumbnails\
-         *             <guid>.jpg
+         *             <id>.jpg
+         *           images\
+         *             <id-hash>.json
+         *             <id-hash>.jpg
          */
 
         public void Initialize() {
@@ -109,8 +113,7 @@ namespace Web.NINAPlugin.Http {
         }
 
         private WebClientVersion GetWebClientVersion(string fileName) {
-            string json = File.ReadAllText(fileName);
-            return JsonConvert.DeserializeObject<WebClientVersion>(json);
+            return JsonUtils.ReadJson<WebClientVersion>(fileName);
         }
 
         private void CopyDirectory(string srcDir, string dstDir, bool recursive) {

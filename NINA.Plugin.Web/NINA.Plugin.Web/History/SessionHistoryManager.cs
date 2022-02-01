@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using NINA.Core.Utility;
+﻿using NINA.Core.Utility;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Web.NINAPlugin.Http;
+using Web.NINAPlugin.Utility;
 
 namespace Web.NINAPlugin.History {
 
@@ -33,8 +33,7 @@ namespace Web.NINAPlugin.History {
 
         public SessionHistory GetSessionHistory(string sessionHome) {
             string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
-            string json = File.ReadAllText(sessionJsonFile);
-            return JsonConvert.DeserializeObject<SessionHistory>(json);
+            return JsonUtils.ReadJson<SessionHistory>(sessionJsonFile);
         }
 
         public string CreateOrUpdateSessionHistory(SessionHistory sessionHistory) {
@@ -42,14 +41,7 @@ namespace Web.NINAPlugin.History {
             string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
 
             string tempFile = Path.GetTempFileName();
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Include;
-            serializer.Formatting = Formatting.Indented;
-
-            using (StreamWriter sw = new StreamWriter(tempFile))
-            using (JsonWriter writer = new JsonTextWriter(sw)) {
-                serializer.Serialize(writer, sessionHistory);
-            }
+            JsonUtils.WriteJson(sessionHistory, tempFile, true);
 
             if (File.Exists(sessionJsonFile)) {
                 File.Delete(sessionJsonFile);
@@ -70,7 +62,7 @@ namespace Web.NINAPlugin.History {
             Logger.Info($"purging web session history older than {days} days");
             string[] sessionDirs = GetSessionHistoryDirectories();
 
-            DateTime compareDate = DateTime.Now.AddDays(-1*days);
+            DateTime compareDate = DateTime.Now.AddDays(-1 * days);
             foreach (string dir in sessionDirs) {
                 DateTime sessionDate = DateTime.ParseExact(Path.GetFileName(dir), "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
                 int diff = (sessionDate - compareDate).Days;
@@ -101,21 +93,13 @@ namespace Web.NINAPlugin.History {
         }
 
         public void WriteSessionList(SessionList sessionList) {
-            string sessionsListFile = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME, HttpSetup.SESSIONS_ROOT, HttpSetup.SESSIONS_LIST_NAME);
+            string sessionsListFile = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, HttpSetup.SESSIONS_LIST_NAME);
             if (File.Exists(sessionsListFile)) {
                 File.Delete(sessionsListFile);
             }
 
             sessionList.OrderSessions();
-
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.NullValueHandling = NullValueHandling.Include;
-            serializer.Formatting = Formatting.Indented;
-
-            using (StreamWriter sw = new StreamWriter(sessionsListFile))
-            using (JsonWriter writer = new JsonTextWriter(sw)) {
-                serializer.Serialize(writer, sessionList);
-            }
+            JsonUtils.WriteJson(sessionList, sessionsListFile, true);
         }
 
         public void DeactivateSessions() {
@@ -128,6 +112,10 @@ namespace Web.NINAPlugin.History {
                     CreateOrUpdateSessionHistory(sessionHistory);
                 }
             }
+        }
+
+        public string GetSessionHome(string sessionName) {
+            return Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, sessionName);
         }
 
         private string GetSessionHome(SessionHistory sessionHistory) {
@@ -145,14 +133,13 @@ namespace Web.NINAPlugin.History {
         }
 
         private string[] GetSessionHistoryDirectories() {
-            string sessionsHome = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, HttpSetup.WEB_PLUGIN_HOME, HttpSetup.SESSIONS_ROOT);
+            string sessionsHome = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT);
             return Directory.GetDirectories(sessionsHome);
         }
 
         private SessionHistory ReadSessionHistory(string key) {
             string sessionJsonFile = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, key, HttpSetup.SESSION_JSON_NAME);
-            string json = File.ReadAllText(sessionJsonFile);
-            return JsonConvert.DeserializeObject<SessionHistory>(json);
+            return JsonUtils.ReadJson<SessionHistory>(sessionJsonFile);
         }
 
         private void WriteThumbnail(string thumbnailFile, BitmapSource imageSource) {
