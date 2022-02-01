@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyMetadata("Repository", "https://github.com/tcpalmer/nina.plugin.web/")]
 [assembly: AssemblyMetadata("FeaturedImageURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/web-plugin-icon.png?raw=true")]
 [assembly: AssemblyMetadata("ScreenshotURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/screenshot1.png?raw=true")]
+[assembly: AssemblyMetadata("AltScreenshotURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/screenshot2.png?raw=true")]
 
 [assembly: AssemblyMetadata("LongDescription", @"The Web Session History Viewer embeds a lightweight Web server that will provide access to details associated with your acquisition sessions.  A custom Web app is included to present the data.  If NINA is running and the plugin is enabled, you can view details from the current ('live') session as well as past sessions from any device on your local network.
 
