@@ -10,11 +10,14 @@ The local network address will use the IP of the computer running NINA.  Assumin
 
 ## Web App Usage
 * By default, the plugin will keep the most recent 10 days of session history.  If you start NINA and enable the Web Plugin, then any available past sessions can be viewed in the Web app.  You can change the number of days to keep in the options.
-* A short time after your first image is saved in the current session, that new session will be appear in the 'Select Session' dropdown.  Select it and you can monitor as new images are saved (it will check for changes every 10 seconds).
+* A short time after your first image is saved in the current session, that new session will be appear in the Sessions menu.  Select it and you can monitor as new images are saved (it will check for changes every 10 seconds).
 * By default, the app will sort the images newest first so the latest image always appears at the top.  However, if you change the table sort order, the latest could appear anywhere depending on the sort column.
+* Click an image thumbnail to see a full-size version of the image (assuming you haven't moved or deleted the original).  Use the mouse wheel to zoom in/out.  Pinch also works on touch-enabled devices.
 * If the session has multiple targets, they will be presented in separate sections under the session.  Click the target name to open/close the target details.
 * There will only be one session history file for each run of NINA.  Disabling and enabling the plugin itself won't start a new session. 
-* Click Show Console to see app status messages.  If this button changes color, click to see what the problem is.  The most common issue is that the Web app is still running but the plugin was disabled or NINA was stopped.  In that case, just close the browser window/tab.
+* Click the Console menu to see app status messages.  If this button changes color, click to see what the problem is.  The most common issue is that the Web app is still running but the plugin was disabled or NINA was stopped.  In that case, just close the browser window/tab.
+* Click the Help menu to see help for the Web app.
+* Click the Settings icon to adjust the settings that control the quality and stretch of the full-sized images.
 * If the Web app is in a weird state, just click reload in the browser.
 * Session history and Web server logs are stored in the WebPlugin directory under the main NINA directory.
 

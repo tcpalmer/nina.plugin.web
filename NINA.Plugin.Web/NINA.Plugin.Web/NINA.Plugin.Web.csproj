@@ -272,8 +272,10 @@
     <Compile Include="History\SessionHistory.cs" />
     <Compile Include="History\SessionHistoryManager.cs" />
     <Compile Include="History\SessionList.cs" />
+    <Compile Include="Http\Api1020\ApiV1020Controller.cs" />
     <Compile Include="Http\HttpServerInstance.cs" />
     <Compile Include="Http\HttpSetup.cs" />
+    <Compile Include="Http\ImageSupport.cs" />
     <Compile Include="ImageSaveWatcher.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -286,6 +288,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Http\HttpServer.cs" />
+    <Compile Include="Utility\JsonUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

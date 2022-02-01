@@ -1,4 +1,5 @@
-﻿using NINA.WPF.Base.Interfaces.Mediator;
+﻿using NINA.Profile.Interfaces;
+using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
 using System.Web;
@@ -11,16 +12,18 @@ namespace Web.NINAPlugin.History {
         public string pluginVersion { get; set; }
         public DateTime startTime { get; set; }
         public string activeTargetId { get; set; }
+        public StretchOptions stretchOptions { get; set; }
         public List<Target> targets { get; set; }
 
         public SessionHistory() {
             // for JSON deserialize
         }
 
-        public SessionHistory(DateTime startTime) {
+        public SessionHistory(DateTime startTime, IProfileService profileService) {
             id = Guid.NewGuid().ToString();
             pluginVersion = GetType().Assembly.GetName().Version.ToString();
             this.startTime = startTime;
+            this.stretchOptions = new StretchOptions(profileService);
             targets = new List<Target>();
         }
 
@@ -41,6 +44,20 @@ namespace Web.NINAPlugin.History {
             }
 
             throw new InvalidOperationException($"active target not found for id {activeTargetId}");
+        }
+    }
+
+    public class StretchOptions {
+        public double autoStretchFactor { get; set; }
+        public double blackClipping { get; set; }
+        public bool unlinkedStretch { get; set; }
+
+        public StretchOptions() { }
+
+        public StretchOptions(IProfileService profileService) {
+            autoStretchFactor = profileService.ActiveProfile.ImageSettings.AutoStretchFactor;
+            blackClipping = profileService.ActiveProfile.ImageSettings.BlackClipping;
+            unlinkedStretch = profileService.ActiveProfile.ImageSettings.UnlinkedStretch;
         }
     }
 
@@ -71,6 +88,7 @@ namespace Web.NINAPlugin.History {
         public string id { get; set; }
         public int index { get; set; }
         public string fileName { get; set; }
+        public string fullPath { get; set; }
         public DateTime started { get; set; }
         public long epochMilliseconds { get; set; }
         public double duration { get; set; }
@@ -83,6 +101,7 @@ namespace Web.NINAPlugin.History {
         public ImageRecord(ImageSavedEventArgs msg) {
             id = Guid.NewGuid().ToString();
             fileName = GetFileName(msg.PathToImage);
+            fullPath = HttpUtility.UrlDecode(msg.PathToImage.AbsolutePath);
             started = msg.MetaData.Image.ExposureStart;
             epochMilliseconds = new DateTimeOffset(started).ToUnixTimeMilliseconds();
             duration = msg.Duration;

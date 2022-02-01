@@ -1,12 +1,13 @@
 ﻿using NINA.Core.Utility;
+using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Web.NINAPlugin.History;
@@ -19,7 +20,7 @@ namespace Web.NINAPlugin {
     public class WebPlugin : PluginBase, INotifyPropertyChanged {
 
         [ImportingConstructor]
-        public WebPlugin(IImageSaveMediator imageSaveMediator) {
+        public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory) {
             if (Settings.Default.UpdateSettings) {
                 Settings.Default.Upgrade();
                 Settings.Default.UpdateSettings = false;
@@ -28,8 +29,9 @@ namespace Web.NINAPlugin {
 
             Settings.Default.PropertyChanged += SettingsChanged;
 
+            HttpServerInstance.SetImageDataFactory(imageDataFactory);
             InitializePlugin();
-            new ImageSaveWatcher(imageSaveMediator);
+            new ImageSaveWatcher(profileService, imageSaveMediator);
         }
 
         private void InitializePlugin() {
@@ -119,7 +121,7 @@ namespace Web.NINAPlugin {
         }
 
         private void setWebUrls() {
-            Dictionary<string, string> urls = new HttpServer(Settings.Default.WebServerPort).GetURLs();
+            Dictionary<string, string> urls = new HttpServer(Settings.Default.WebServerPort, null).GetURLs();
             LocalAddress = urls[HttpServer.LOCALHOST_KEY];
 
             if (urls.ContainsKey(HttpServer.IP_KEY)) {

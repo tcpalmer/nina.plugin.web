@@ -16,7 +16,7 @@ namespace Web.NINAPlugin.Test {
 
             ImageSavedEventArgs args = new ImageSavedEventArgs();
             args.MetaData = metadata;
-            args.PathToImage = new Uri("file://foo/bar.fits");
+            args.PathToImage = new Uri("file:///C:/foo/yoyo/bar.fits"); 
             args.Duration = 11.0;
             args.Filter = "Foo";
             args.StarDetectionAnalysis = new StarDetectionAnalysis();

@@ -1,4 +1,5 @@
 ﻿using NINA.Core.Utility;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.ComponentModel;
@@ -11,14 +12,16 @@ namespace Web.NINAPlugin {
         private bool WebPluginEnabled;
 
         private bool initialized = false;
+        IProfileService profileService;
         private SessionList sessionList;
         private SessionHistoryManager sessionHistoryManager;
         private string sessionHome;
 
-        public ImageSaveWatcher(IImageSaveMediator imageSaveMediator) {
+        public ImageSaveWatcher(IProfileService profileService, IImageSaveMediator imageSaveMediator) {
             WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
             Properties.Settings.Default.PropertyChanged += SettingsChanged;
 
+            this.profileService = profileService;
             sessionHistoryManager = new SessionHistoryManager();
             imageSaveMediator.ImageSaved += ImageSaveMeditator_ImageSaved;
         }
@@ -58,7 +61,7 @@ namespace Web.NINAPlugin {
             Target activeTarget;
 
             if (sessionHome == null) {
-                sessionHistory = new SessionHistory(DateTime.Now);
+                sessionHistory = new SessionHistory(DateTime.Now, profileService);
                 Target target = new Target(msg.MetaData.Target.Name);
                 sessionHistory.AddTarget(target);
                 activeTarget = target;

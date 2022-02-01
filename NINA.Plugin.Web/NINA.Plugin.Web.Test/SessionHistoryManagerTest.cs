@@ -1,25 +1,32 @@
 ﻿using FluentAssertions;
+using Moq;
+using NINA.Profile.Interfaces;
 using NUnit.Framework;
 using System;
 using System.IO;
-using System.Threading;
 using Web.NINAPlugin.History;
 
 namespace Web.NINAPlugin.Test {
 
     public class SessionHistoryManagerTest {
 
+        private Mock<IProfileService> profileServiceMock = new Mock<IProfileService>();
         private string tempDir;
 
         [SetUp]
         public void SetUp() {
             tempDir = Path.Combine(Path.GetTempPath(), "SHM_test");
             Directory.CreateDirectory(tempDir);
+            profileServiceMock.Reset();
         }
 
         [Test]
         public void TestBasic() {
-            SessionHistory sh = new SessionHistory(DateTime.Now);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.AutoStretchFactor, 1.23);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.BlackClipping, -3.21);
+            profileServiceMock.SetupProperty(m => m.ActiveProfile.ImageSettings.UnlinkedStretch, true);
+
+            SessionHistory sh = new SessionHistory(DateTime.Now, profileServiceMock.Object);
             Target t1 = new Target("t1");
 
             t1.AddImageRecord(new ImageRecord(TestHelper.GetImageSavedEventArgs(DateTime.Now)));
@@ -35,6 +42,10 @@ namespace Web.NINAPlugin.Test {
             SessionHistory sh2 = sut.GetSessionHistory(sessionHome);
             sh2.id.Should().Be(sh.id);
             sh2.activeTargetId.Should().Be(sh.activeTargetId);
+
+            sh2.stretchOptions.autoStretchFactor.Should().Be(sh.stretchOptions.autoStretchFactor);
+            sh2.stretchOptions.blackClipping.Should().Be(sh.stretchOptions.blackClipping);
+            sh2.stretchOptions.unlinkedStretch.Should().Be(sh.stretchOptions.unlinkedStretch);
         }
 
         [Test]
