@@ -1,4 +1,5 @@
 ﻿using NINA.Core.Utility;
+using NINA.Equipment.Model;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
@@ -10,6 +11,7 @@ namespace Web.NINAPlugin {
     public class ImageSaveWatcher {
 
         private bool WebPluginEnabled;
+        private bool NonLightsEnabled;
 
         private bool initialized = false;
         IProfileService profileService;
@@ -19,6 +21,7 @@ namespace Web.NINAPlugin {
 
         public ImageSaveWatcher(IProfileService profileService, IImageSaveMediator imageSaveMediator) {
             WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
+            NonLightsEnabled = Properties.Settings.Default.NonLights;
             Properties.Settings.Default.PropertyChanged += SettingsChanged;
 
             this.profileService = profileService;
@@ -33,8 +36,8 @@ namespace Web.NINAPlugin {
                 return;
             }
 
-            if (msg.MetaData.Image.ImageType != "LIGHT") {
-                Logger.Debug("image is not a light, skipping");
+            if (!isEnabledImageType(msg.MetaData.Image.ImageType)) {
+                Logger.Debug($"image type not enabled, skipping: {msg.MetaData.Image.ImageType}");
                 return;
             }
 
@@ -50,6 +53,30 @@ namespace Web.NINAPlugin {
             }
         }
 
+        private bool isEnabledImageType(string imageType) {
+
+            if (string.IsNullOrEmpty(imageType)) {
+                return false;
+            }
+
+            if (!NonLightsEnabled) {
+                return imageType == CaptureSequence.ImageTypes.LIGHT;
+            }
+
+            switch (imageType) {
+                case CaptureSequence.ImageTypes.LIGHT:
+                case CaptureSequence.ImageTypes.FLAT:
+                case CaptureSequence.ImageTypes.DARK:
+                case CaptureSequence.ImageTypes.DARKFLAT:
+                    return true;
+                case CaptureSequence.ImageTypes.BIAS:
+                case CaptureSequence.ImageTypes.SNAPSHOT:
+                    return false;
+            }
+
+            return false;
+        }
+
         private void initialize() {
             sessionList = sessionHistoryManager.GetSessionList();
             initialized = true;
@@ -62,7 +89,7 @@ namespace Web.NINAPlugin {
 
             if (sessionHome == null) {
                 sessionHistory = new SessionHistory(DateTime.Now, profileService);
-                Target target = new Target(msg.MetaData.Target.Name);
+                Target target = new Target(getTargetName(msg));
                 sessionHistory.AddTarget(target);
                 activeTarget = target;
 
@@ -74,11 +101,9 @@ namespace Web.NINAPlugin {
                 sessionHistory = sessionHistoryManager.GetSessionHistory(sessionHome);
                 activeTarget = sessionHistory.GetActiveTarget();
 
-                // TODO: a sequence could presumably return to previous target so have to handle
-                //    check for existing target by that name and use if found instead of adding new
-
-                if (activeTarget.name != msg.MetaData.Target.Name) {
-                    activeTarget = new Target(msg.MetaData.Target.Name);
+                string targetName = getTargetName(msg);
+                if (activeTarget.name != targetName) {
+                    activeTarget = new Target(targetName);
                     sessionHistory.AddTarget(activeTarget);
                 }
             }
@@ -89,10 +114,23 @@ namespace Web.NINAPlugin {
             sessionHistoryManager.AddThumbnail(sessionHome, record.id, msg.Image);
         }
 
+        private string getTargetName(ImageSavedEventArgs msg) {
+            if (string.IsNullOrEmpty(msg.MetaData.Target.Name)) {
+                return string.IsNullOrEmpty(msg.Filter)
+                    ? msg.MetaData.Image.ImageType
+                    : $"{msg.MetaData.Image.ImageType}-{msg.Filter}";
+            }
+
+            return msg.MetaData.Target.Name;
+        }
+
         void SettingsChanged(object sender, PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
                 case "WebPluginEnabled":
                     WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
+                    break;
+                case "NonLights":
+                    NonLightsEnabled = Properties.Settings.Default.NonLights;
                     break;
             }
         }

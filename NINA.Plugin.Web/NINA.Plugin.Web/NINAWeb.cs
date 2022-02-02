@@ -93,6 +93,15 @@ namespace Web.NINAPlugin {
             }
         }
 
+        public bool NonLights {
+            get => Settings.Default.NonLights;
+            set {
+                Settings.Default.NonLights = value;
+                Settings.Default.Save();
+                RaisePropertyChanged();
+            }
+        }
+
         public string LocalAddress {
             get => Settings.Default.LocalAddress;
             set {
