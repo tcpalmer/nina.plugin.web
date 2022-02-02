@@ -106,5 +106,17 @@ namespace Web.NINAPlugin.Properties {
                 this["HostAddress"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool NonLights {
+            get {
+                return ((bool)(this["NonLights"]));
+            }
+            set {
+                this["NonLights"] = value;
+            }
+        }
     }
 }
