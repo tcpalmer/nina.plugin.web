@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Web.NINAPlugin.Autofocus;
 using Web.NINAPlugin.History;
 using Web.NINAPlugin.Http;
 using Web.NINAPlugin.Properties;
@@ -18,6 +19,10 @@ namespace Web.NINAPlugin {
 
     [Export(typeof(IPluginManifest))]
     public class WebPlugin : PluginBase, INotifyPropertyChanged {
+        private SessionHistoryManager sessionHistoryManager;
+        private NINAEventWatcher eventWatcher;
+        private AutofocusEventWatcher autofocusEventWatcher;
+        private ImageSaveWatcher imageSaveWatcher;
 
         [ImportingConstructor]
         public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory) {
@@ -29,28 +34,41 @@ namespace Web.NINAPlugin {
 
             Settings.Default.PropertyChanged += SettingsChanged;
 
+            this.eventWatcher = new NINAEventWatcher();
+            this.autofocusEventWatcher = new AutofocusEventWatcher();
+            this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator);
+
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
-            InitializePlugin();
-            new ImageSaveWatcher(profileService, imageSaveMediator);
+            InitializePlugin(profileService);
         }
 
-        private void InitializePlugin() {
+        private void InitializePlugin(IProfileService profileService) {
             try {
                 setWebUrls();
                 new HttpSetup().Initialize();
 
-                SessionHistoryManager sessionHistoryManager = new SessionHistoryManager();
+                sessionHistoryManager = new SessionHistoryManager();
+
+                // Clean up existing session histories
                 sessionHistoryManager.PurgeHistoryOlderThan(Settings.Default.PurgeDays);
-                sessionHistoryManager.DeactivateSessions();
+                sessionHistoryManager.DeactivateOldSessions();
+
+                // Create a new session history for this run
+                string sessionHome = sessionHistoryManager.StartNewSessionHistory(profileService);
+                eventWatcher.setSessionHome(sessionHome);
+                imageSaveWatcher.setSessionHome(sessionHome);
+                autofocusEventWatcher.setSessionHome(sessionHome);
                 sessionHistoryManager.InitializeSessionList();
 
                 if (WebPluginEnabled) {
                     HttpServerInstance.SetPort(WebServerPort);
                     HttpServerInstance.Start();
+                    eventWatcher.Start();
+                    autofocusEventWatcher.Start();
                 }
             }
             catch (Exception ex) {
-                Logger.Error($"failed to initialize the web plugin: {ex}, aborting");
+                Logger.Error($"failed to initialize the web plugin: {ex} {ex.Source}, aborting");
                 return;
             }
         }
@@ -58,9 +76,12 @@ namespace Web.NINAPlugin {
         public override Task Teardown() {
             try {
                 HttpServerInstance.Stop();
+                eventWatcher.Stop();
+                autofocusEventWatcher.Stop();
+                sessionHistoryManager.Stop();
             }
             catch (Exception ex) {
-                Logger.Error($"failed to stop web server at teardown time: {ex}");
+                Logger.Error($"failed to stop web server or event watchers at teardown time: {ex}");
             }
 
             return base.Teardown();
@@ -143,20 +164,24 @@ namespace Web.NINAPlugin {
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        void SettingsChanged(object sender, PropertyChangedEventArgs e) {
+        private void SettingsChanged(object sender, PropertyChangedEventArgs e) {
             switch (e.PropertyName) {
-
                 case "WebPluginEnabled":
                     if (Settings.Default.WebPluginEnabled) {
                         HttpServerInstance.SetPort(Settings.Default.WebServerPort);
                         HttpServerInstance.Start();
+                        eventWatcher.Start();
+                        autofocusEventWatcher.Start();
                     }
                     else {
                         HttpServerInstance.Stop();
+                        eventWatcher.Stop();
+                        autofocusEventWatcher.Stop();
                     }
                     break;
 

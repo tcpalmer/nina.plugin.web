@@ -8,18 +8,17 @@ using Web.NINAPlugin.Utility;
 namespace Web.NINAPlugin.Http {
 
     public class HttpSetup {
+        public static readonly string PLUGIN_HOME = "Web Session History Viewer";
+        public static readonly string WEB_PLUGIN_HOME = "WebPlugin";
 
-        static public readonly string PLUGIN_HOME = "Web Session History Viewer";
-        static public readonly string WEB_PLUGIN_HOME = "WebPlugin";
+        public static readonly string WEB_CLIENT_DIR = "dist";
+        private static readonly string WEB_CLIENT_VERSION_FILE = "webClientVersion.json";
 
-        static public readonly string WEB_CLIENT_DIR = "dist";
-        static private readonly string WEB_CLIENT_VERSION_FILE = "webClientVersion.json";
-
-        static public readonly string SESSIONS_ROOT = "sessions";
-        static public readonly string SESSIONS_LIST_NAME = "sessions.json";
-        static public readonly string THUMBNAILS_ROOT = "thumbnails";
-        static public readonly string IMAGES_ROOT = "images";
-        static public readonly string SESSION_JSON_NAME = "sessionHistory.json";
+        public static readonly string SESSIONS_ROOT = "sessions";
+        public static readonly string SESSIONS_LIST_NAME = "sessions.json";
+        public static readonly string THUMBNAILS_ROOT = "thumbnails";
+        public static readonly string IMAGES_ROOT = "images";
+        public static readonly string SESSION_JSON_NAME = "sessionHistory.json";
 
         /*
          * Directory structure:
@@ -39,7 +38,6 @@ namespace Web.NINAPlugin.Http {
          */
 
         public void Initialize() {
-
             // The plugin name as installed by NINA under 'Plugins'
             string pluginName = PLUGIN_HOME;
             Logger.Debug($"plugin name: {pluginName}");

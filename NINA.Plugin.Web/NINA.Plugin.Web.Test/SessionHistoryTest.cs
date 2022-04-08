@@ -23,6 +23,7 @@ namespace Web.NINAPlugin.Test {
 
             SessionHistory sut = new SessionHistory(DateTime.Now, profileServiceMock.Object);
 
+            sut.sessionVersion.Should().Be(0);
             sut.stretchOptions.autoStretchFactor.Should().Be(1.23);
             sut.stretchOptions.blackClipping.Should().Be(-3.21);
             sut.stretchOptions.unlinkedStretch.Should().Be(true);
