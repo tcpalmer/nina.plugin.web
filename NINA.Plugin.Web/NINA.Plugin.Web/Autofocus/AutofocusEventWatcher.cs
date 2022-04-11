@@ -17,14 +17,17 @@ namespace Web.NINAPlugin.Autofocus {
         }
 
         public void Start() {
-            //processor.NINALogEventSaved += handleEvent;
+            autofocusDirectoryWatcher.AutofocusEventSaved += handleEvent;
             autofocusDirectoryWatcher.Start();
         }
 
         public void Stop() {
             autofocusDirectoryWatcher.Stop();
-            //processor.NINALogEventSaved -= handleEvent;
+            autofocusDirectoryWatcher.AutofocusEventSaved -= handleEvent;
         }
 
+        private void handleEvent(object sender, AutofocusEvent e) {
+            sessionHistoryManager.UpdateAddAutofocusEvent(sessionHome, e);
+        }
     }
 }

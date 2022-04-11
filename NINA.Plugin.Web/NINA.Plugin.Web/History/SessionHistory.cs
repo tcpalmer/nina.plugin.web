@@ -15,6 +15,7 @@ namespace Web.NINAPlugin.History {
         public string pluginVersion { get; set; }
         public int sessionVersion { get; set; }
         public DateTime startTime { get; set; }
+        public bool activeSession { get; set; }
         public string activeTargetId { get; set; }
         public StretchOptions stretchOptions { get; set; }
         public List<NINALogEvent> events { get; set; }
@@ -61,6 +62,16 @@ namespace Web.NINAPlugin.History {
             }
 
             throw new InvalidOperationException($"active target not found for id {activeTargetId}");
+        }
+
+        public Target GetTargetByName(string targetName) {
+            foreach (Target t in targets) {
+                if (t.name == targetName) {
+                    return t;
+                }
+            }
+
+            return null;
         }
     }
 

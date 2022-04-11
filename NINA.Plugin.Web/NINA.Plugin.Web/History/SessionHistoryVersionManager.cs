@@ -26,9 +26,12 @@ namespace Web.NINAPlugin.History {
         }
 
         public void Stop() {
-            stopped = true;
-            flushQueue();
-            flushThread.Abort();
+            if (flushThread != null) {
+                stopped = true;
+                flushQueue();
+                flushThread.Abort();
+                flushThread = null;
+            }
         }
 
         public SessionHistory GetSessionHistory() {
@@ -63,6 +66,7 @@ namespace Web.NINAPlugin.History {
             });
 
             Logger.Debug("session history version flush thread starting");
+            flushThread.Name = "WSHV flush thread";
             flushThread.Start();
         }
 
@@ -79,7 +83,7 @@ namespace Web.NINAPlugin.History {
                         int version = next.sessionHistory.sessionVersion;
                         Logger.Debug($"writing session history, version {version}");
                         JsonUtils.WriteJson(next.sessionHistory, next.fileName, true);
-                        // TODO: remove this when ready - for now let's see all versions too
+                        // TODO: remove this when ready - for now let's see all versions
                         JsonUtils.WriteJson(next.sessionHistory, $"{next.fileName}_{version}");
                     }
                 }

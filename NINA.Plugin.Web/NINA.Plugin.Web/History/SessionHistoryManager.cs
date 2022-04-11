@@ -38,6 +38,7 @@ namespace Web.NINAPlugin.History {
 
         public string StartNewSessionHistory(IProfileService profileService) {
             SessionHistory sessionHistory = new SessionHistory(DateTime.Now, profileService);
+            sessionHistory.activeSession = true;
             string sessionHome = GetSessionHome(sessionHistory);
             string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
             sessionHistoryVersionManager = new SessionHistoryVersionManager(sessionHistory, sessionJsonFile);
@@ -54,9 +55,17 @@ namespace Web.NINAPlugin.History {
                 string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
                 Target activeTarget = sessionHistory.GetActiveTarget();
 
+                // Find the target to append to:
+                // - If active target matches this name, use that
+                // - Else if we already have a target with this name (even if not active), use that
+                // - Otherwise create a new target
+
                 if (activeTarget?.name != targetName) {
-                    activeTarget = new Target(targetName);
-                    sessionHistory.AddTarget(activeTarget);
+                    activeTarget = sessionHistory.GetTargetByName(targetName);
+                    if (activeTarget == null) {
+                        activeTarget = new Target(targetName);
+                        sessionHistory.AddTarget(activeTarget);
+                    }
                 }
 
                 activeTarget.AddImageRecord(record);
@@ -138,8 +147,9 @@ namespace Web.NINAPlugin.History {
             SessionList sessionList = GetSessionList();
             foreach (Session session in sessionList.sessions) {
                 SessionHistory sessionHistory = ReadOldSessionHistory(session.key);
-                if (sessionHistory.activeTargetId != null) {
+                if (sessionHistory.activeSession || sessionHistory.activeTargetId != null) {
                     Logger.Debug($"marking session inactive: {session.key}");
+                    sessionHistory.activeSession = false;
                     sessionHistory.activeTargetId = null;
                     WriteOldSessionHistory(sessionHistory);
                 }

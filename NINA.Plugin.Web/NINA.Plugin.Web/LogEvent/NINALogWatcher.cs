@@ -34,6 +34,8 @@ namespace Web.NINAPlugin.LogEvent {
             if (watcherThread != null) {
                 Logger.Debug("web viewer: stopping log watcher");
                 stopped = true;
+                watcherThread.Abort();
+                watcherThread = null;
             }
         }
 
@@ -69,10 +71,16 @@ namespace Web.NINAPlugin.LogEvent {
                     }
                 }
                 catch (Exception e) {
-                    Logger.Warning($"failed to process log messages for web viewer: {e.Message} {e.StackTrace}");
+                    if (e is ThreadAbortException) {
+                        Logger.Debug("web view log watcher has been stopped/aborted");
+                    }
+                    else {
+                        Logger.Warning($"failed to process log messages for web viewer: {e.Message} {e.StackTrace}");
+                    }
                 }
             });
 
+            watcherThread.Name = "WSHV log watcher thread";
             watcherThread.Start();
         }
 
