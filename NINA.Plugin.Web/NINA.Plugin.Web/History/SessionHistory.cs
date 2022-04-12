@@ -1,5 +1,4 @@
-﻿using NINA.Core.Utility;
-using NINA.Image.ImageData;
+﻿using NINA.Image.ImageData;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
@@ -123,6 +122,8 @@ namespace Web.NINAPlugin.History {
         public string filterName { get; set; }
         public int detectedStars { get; set; }
         public double HFR { get; set; }
+        public double FocuserTemperature { get; set; }
+        public double WeatherTemperature { get; set; }
         public double ADUStDev { get; set; }
         public double ADUMean { get; set; }
         public double ADUMedian { get; set; }
@@ -152,6 +153,9 @@ namespace Web.NINAPlugin.History {
             detectedStars = msg.StarDetectionAnalysis.DetectedStars;
             HFR = msg.StarDetectionAnalysis.HFR;
 
+            FocuserTemperature = ReformatDouble(msg.MetaData.Focuser?.Temperature);
+            WeatherTemperature = ReformatDouble(msg.MetaData.WeatherData?.Temperature);
+
             ADUStDev = msg.Statistics.StDev;
             ADUMean = msg.Statistics.Mean;
             ADUMedian = msg.Statistics.Mean;
@@ -175,8 +179,8 @@ namespace Web.NINAPlugin.History {
             return (image.RecordedRMS != null && metric != null) ? ReformatDouble((double)(metric * image.RecordedRMS.Scale)) : 0.0;
         }
 
-        public static Double ReformatDouble(Double value) {
-            return Double.Parse(String.Format("{0:0.####}", value));
+        public static Double ReformatDouble(Double? value) {
+            return value != null ? Double.Parse(String.Format("{0:0.####}", value)) : Double.NaN;
         }
 
         private string GetFileName(Uri imageUri) {
