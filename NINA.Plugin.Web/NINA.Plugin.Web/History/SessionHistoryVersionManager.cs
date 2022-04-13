@@ -83,8 +83,6 @@ namespace Web.NINAPlugin.History {
                         int version = next.sessionHistory.sessionVersion;
                         Logger.Debug($"writing session history, version {version}");
                         JsonUtils.WriteJson(next.sessionHistory, next.fileName, true);
-                        // TODO: remove this when ready - for now let's see all versions
-                        JsonUtils.WriteJson(next.sessionHistory, $"{next.fileName}_{version}");
                     }
                 }
             }

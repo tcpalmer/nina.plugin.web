@@ -96,7 +96,6 @@ namespace Web.NINAPlugin.History {
             WriteThumbnail(thumbnailFile, image);
         }
 
-        // TODO: we could be creating 'empty' session histories if the plugin isn't enabled.  Nice to just remove here (if no targets or events).
         public void PurgeHistoryOlderThan(int days) {
             days = days < 0 ? 0 : days;
 
