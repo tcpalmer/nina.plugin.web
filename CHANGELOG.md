@@ -1,5 +1,10 @@
 # Web Session History Viewer
 
+## 1.1.0.0 - 2022-04-??
+* Added timeline plot of NINA events including images saved, AF, MF, and more
+* Hover over events to see details (image thumbnails, AF curve plots)
+* Added plot of image quality metrics: stars, HFR, ADU stats, guiding stats, temperature
+
 ## 1.0.2.0 - 2022-02-02
 * You can now click an image thumbnail to view a full-sized version.  The viewer supports zoom and drag to inspect.  Zoom in/out with the viewer icons or the mouse wheel; pinch to zoom works on touch-enabled devices.
 * You can adjust settings that control the quality and stretch of the full-sized images

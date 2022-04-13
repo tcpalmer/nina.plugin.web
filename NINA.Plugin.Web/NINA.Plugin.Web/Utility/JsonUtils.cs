@@ -38,6 +38,7 @@ namespace Web.NINAPlugin.Utility {
             using (StreamWriter sw = new StreamWriter(fileName))
             using (JsonWriter writer = new JsonTextWriter(sw)) {
                 serializer.Serialize(writer, obj);
+                writer.Flush();
             }
         }
 

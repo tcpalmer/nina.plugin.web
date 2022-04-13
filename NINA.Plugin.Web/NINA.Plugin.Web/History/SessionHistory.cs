@@ -1,18 +1,24 @@
-﻿using NINA.Profile.Interfaces;
+﻿using NINA.Image.ImageData;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
 using System.Web;
+using Web.NINAPlugin.Autofocus;
+using Web.NINAPlugin.LogEvent;
 
 namespace Web.NINAPlugin.History {
 
     public class SessionHistory {
-
         public string id { get; set; }
         public string pluginVersion { get; set; }
+        public int sessionVersion { get; set; }
         public DateTime startTime { get; set; }
+        public bool activeSession { get; set; }
         public string activeTargetId { get; set; }
         public StretchOptions stretchOptions { get; set; }
+        public List<NINALogEvent> events { get; set; }
+        public List<AutofocusEvent> autofocus { get; set; }
         public List<Target> targets { get; set; }
 
         public SessionHistory() {
@@ -22,9 +28,20 @@ namespace Web.NINAPlugin.History {
         public SessionHistory(DateTime startTime, IProfileService profileService) {
             id = Guid.NewGuid().ToString();
             pluginVersion = GetType().Assembly.GetName().Version.ToString();
+            sessionVersion = 0;
             this.startTime = startTime;
             this.stretchOptions = new StretchOptions(profileService);
+            events = new List<NINALogEvent>();
+            autofocus = new List<AutofocusEvent>();
             targets = new List<Target>();
+        }
+
+        public void AddLogEvent(NINALogEvent logEvent) {
+            events.Add(logEvent);
+        }
+
+        public void AddAutofocusEvent(AutofocusEvent afEvent) {
+            autofocus.Add(afEvent);
         }
 
         public void AddTarget(Target target) {
@@ -45,6 +62,16 @@ namespace Web.NINAPlugin.History {
 
             throw new InvalidOperationException($"active target not found for id {activeTargetId}");
         }
+
+        public Target GetTargetByName(string targetName) {
+            foreach (Target t in targets) {
+                if (t.name == targetName) {
+                    return t;
+                }
+            }
+
+            return null;
+        }
     }
 
     public class StretchOptions {
@@ -52,7 +79,8 @@ namespace Web.NINAPlugin.History {
         public double blackClipping { get; set; }
         public bool unlinkedStretch { get; set; }
 
-        public StretchOptions() { }
+        public StretchOptions() {
+        }
 
         public StretchOptions(IProfileService profileService) {
             autoStretchFactor = profileService.ActiveProfile.ImageSettings.AutoStretchFactor;
@@ -62,13 +90,13 @@ namespace Web.NINAPlugin.History {
     }
 
     public class Target {
-
         public string id { get; set; }
         public string name { get; set; }
         public DateTime startTime { get; set; }
         public List<ImageRecord> imageRecords { get; set; }
 
-        public Target() { }
+        public Target() {
+        }
 
         public Target(string name) {
             id = Guid.NewGuid().ToString();
@@ -84,7 +112,6 @@ namespace Web.NINAPlugin.History {
     }
 
     public class ImageRecord {
-
         public string id { get; set; }
         public int index { get; set; }
         public string fileName { get; set; }
@@ -95,19 +122,65 @@ namespace Web.NINAPlugin.History {
         public string filterName { get; set; }
         public int detectedStars { get; set; }
         public double HFR { get; set; }
+        public double FocuserTemperature { get; set; }
+        public double WeatherTemperature { get; set; }
+        public double ADUStDev { get; set; }
+        public double ADUMean { get; set; }
+        public double ADUMedian { get; set; }
+        public int ADUMin { get; set; }
+        public int ADUMax { get; set; }
+        public double ADUMAD { get; set; }
+        public double GuidingRMS { get; set; }
+        public double GuidingRMSArcSec { get; set; }
+        public double GuidingRMSRA { get; set; }
+        public double GuidingRMSRAArcSec { get; set; }
+        public double GuidingRMSDEC { get; set; }
+        public double GuidingRMSDECArcSec { get; set; }
 
-        public ImageRecord() { }
+        public ImageRecord() {
+        }
 
         public ImageRecord(ImageSavedEventArgs msg) {
             id = Guid.NewGuid().ToString();
             fileName = GetFileName(msg.PathToImage);
             fullPath = HttpUtility.UrlDecode(msg.PathToImage.AbsolutePath);
+
             started = msg.MetaData.Image.ExposureStart;
             epochMilliseconds = new DateTimeOffset(started).ToUnixTimeMilliseconds();
             duration = msg.Duration;
             filterName = msg.Filter;
+
             detectedStars = msg.StarDetectionAnalysis.DetectedStars;
             HFR = msg.StarDetectionAnalysis.HFR;
+
+            FocuserTemperature = ReformatDouble(msg.MetaData.Focuser?.Temperature);
+            WeatherTemperature = ReformatDouble(msg.MetaData.WeatherData?.Temperature);
+
+            ADUStDev = msg.Statistics.StDev;
+            ADUMean = msg.Statistics.Mean;
+            ADUMedian = msg.Statistics.Mean;
+            ADUMin = msg.Statistics.Min;
+            ADUMax = msg.Statistics.Max;
+            ADUMAD = msg.Statistics.MedianAbsoluteDeviation;
+
+            GuidingRMS = GetGuidingMetric(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.Total);
+            GuidingRMSArcSec = GetGuidingMetricArcSec(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.Total);
+            GuidingRMSRA = GetGuidingMetric(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.RA);
+            GuidingRMSRAArcSec = GetGuidingMetricArcSec(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.RA);
+            GuidingRMSDEC = GetGuidingMetric(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.Dec);
+            GuidingRMSDECArcSec = GetGuidingMetricArcSec(msg.MetaData.Image, msg.MetaData.Image?.RecordedRMS?.Dec);
+        }
+
+        private double GetGuidingMetric(ImageParameter image, double? metric) {
+            return (image.RecordedRMS != null && metric != null) ? ReformatDouble((double)metric) : 0.0;
+        }
+
+        private double GetGuidingMetricArcSec(ImageParameter image, double? metric) {
+            return (image.RecordedRMS != null && metric != null) ? ReformatDouble((double)(metric * image.RecordedRMS.Scale)) : 0.0;
+        }
+
+        public static Double ReformatDouble(Double? value) {
+            return value != null ? Double.Parse(String.Format("{0:0.####}", value)) : Double.NaN;
         }
 
         private string GetFileName(Uri imageUri) {
@@ -120,5 +193,4 @@ namespace Web.NINAPlugin.History {
             return path;
         }
     }
-
 }

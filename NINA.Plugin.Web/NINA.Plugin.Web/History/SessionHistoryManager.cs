@@ -1,22 +1,27 @@
 ﻿using NINA.Core.Utility;
+using NINA.Profile.Interfaces;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Web.NINAPlugin.Autofocus;
 using Web.NINAPlugin.Http;
+using Web.NINAPlugin.LogEvent;
 using Web.NINAPlugin.Utility;
 
 namespace Web.NINAPlugin.History {
 
     public class SessionHistoryManager {
+        private static SessionHistoryVersionManager sessionHistoryVersionManager;
 
         public string webServerRoot;
+        private readonly object lockObject = new object();
 
-        public SessionHistoryManager() : this(CoreUtil.APPLICATIONTEMPPATH) { }
+        public SessionHistoryManager() : this(CoreUtil.APPLICATIONTEMPPATH) {
+        }
 
         public SessionHistoryManager(string rootDirectory) {
-
             if (String.IsNullOrEmpty(rootDirectory)) {
                 throw new Exception("root directory for session manager cannot be null/empty");
             }
@@ -31,24 +36,59 @@ namespace Web.NINAPlugin.History {
             }
         }
 
-        public SessionHistory GetSessionHistory(string sessionHome) {
-            string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
-            return JsonUtils.ReadJson<SessionHistory>(sessionJsonFile);
-        }
-
-        public string CreateOrUpdateSessionHistory(SessionHistory sessionHistory) {
+        public string StartNewSessionHistory(IProfileService profileService) {
+            SessionHistory sessionHistory = new SessionHistory(DateTime.Now, profileService);
+            sessionHistory.activeSession = true;
             string sessionHome = GetSessionHome(sessionHistory);
             string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
-
-            string tempFile = Path.GetTempFileName();
-            JsonUtils.WriteJson(sessionHistory, tempFile, true);
-
-            if (File.Exists(sessionJsonFile)) {
-                File.Delete(sessionJsonFile);
-            }
-
-            File.Move(tempFile, sessionJsonFile);
+            sessionHistoryVersionManager = new SessionHistoryVersionManager(sessionHistory, sessionJsonFile);
             return sessionHome;
+        }
+
+        public void Stop() {
+            sessionHistoryVersionManager.Stop();
+        }
+
+        public void UpdateAddImageRecord(string sessionHome, string targetName, ImageRecord record) {
+            lock (lockObject) {
+                SessionHistory sessionHistory = sessionHistoryVersionManager.GetSessionHistory();
+                string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
+                Target activeTarget = sessionHistory.GetActiveTarget();
+
+                // Find the target to append to:
+                // - If active target matches this name, use that
+                // - Else if we already have a target with this name (even if not active), use that
+                // - Otherwise create a new target
+
+                if (activeTarget?.name != targetName) {
+                    activeTarget = sessionHistory.GetTargetByName(targetName);
+                    if (activeTarget == null) {
+                        activeTarget = new Target(targetName);
+                        sessionHistory.AddTarget(activeTarget);
+                    }
+                }
+
+                activeTarget.AddImageRecord(record);
+                sessionHistoryVersionManager.QueueVersion(sessionHistory, sessionJsonFile);
+            }
+        }
+
+        public void UpdateAddEvent(string sessionHome, NINALogEvent logEvent) {
+            lock (lockObject) {
+                SessionHistory sessionHistory = sessionHistoryVersionManager.GetSessionHistory();
+                string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
+                sessionHistory.AddLogEvent(logEvent);
+                sessionHistoryVersionManager.QueueVersion(sessionHistory, sessionJsonFile);
+            }
+        }
+
+        public void UpdateAddAutofocusEvent(string sessionHome, AutofocusEvent afEvent) {
+            lock (lockObject) {
+                SessionHistory sessionHistory = sessionHistoryVersionManager.GetSessionHistory();
+                string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
+                sessionHistory.AddAutofocusEvent(afEvent);
+                sessionHistoryVersionManager.QueueVersion(sessionHistory, sessionJsonFile);
+            }
         }
 
         public void AddThumbnail(string sessionHome, string id, BitmapSource image) {
@@ -102,14 +142,15 @@ namespace Web.NINAPlugin.History {
             JsonUtils.WriteJson(sessionList, sessionsListFile, true);
         }
 
-        public void DeactivateSessions() {
+        public void DeactivateOldSessions() {
             SessionList sessionList = GetSessionList();
             foreach (Session session in sessionList.sessions) {
-                SessionHistory sessionHistory = ReadSessionHistory(session.key);
-                if (sessionHistory.activeTargetId != null) {
+                SessionHistory sessionHistory = ReadOldSessionHistory(session.key);
+                if (sessionHistory.activeSession || sessionHistory.activeTargetId != null) {
                     Logger.Debug($"marking session inactive: {session.key}");
+                    sessionHistory.activeSession = false;
                     sessionHistory.activeTargetId = null;
-                    CreateOrUpdateSessionHistory(sessionHistory);
+                    WriteOldSessionHistory(sessionHistory);
                 }
             }
         }
@@ -137,9 +178,24 @@ namespace Web.NINAPlugin.History {
             return Directory.GetDirectories(sessionsHome);
         }
 
-        private SessionHistory ReadSessionHistory(string key) {
+        private SessionHistory ReadOldSessionHistory(string key) {
             string sessionJsonFile = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, key, HttpSetup.SESSION_JSON_NAME);
             return JsonUtils.ReadJson<SessionHistory>(sessionJsonFile);
+        }
+
+        private string WriteOldSessionHistory(SessionHistory sessionHistory) {
+            string sessionHome = GetSessionHome(sessionHistory);
+            string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
+
+            string tempFile = Path.GetTempFileName();
+            JsonUtils.WriteJson(sessionHistory, tempFile, true);
+
+            if (File.Exists(sessionJsonFile)) {
+                File.Delete(sessionJsonFile);
+            }
+
+            File.Move(tempFile, sessionJsonFile);
+            return sessionHome;
         }
 
         private void WriteThumbnail(string thumbnailFile, BitmapSource imageSource) {
@@ -154,6 +210,5 @@ namespace Web.NINAPlugin.History {
                 encoder.Save(fs);
             }
         }
-
     }
 }
