@@ -60,6 +60,18 @@ namespace Web.NINAPlugin.LogEvent {
             re = new Regex("^Advanced Sequence finished$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ADV_SEQ_STOP, false, null));
 
+            // Dome opened
+            re = new Regex("^Opened dome shutter\\. Shutter state after opening ShutterOpen$", options);
+            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_SHUTTER_OPENED, false, null));
+
+            // Dome closed
+            re = new Regex("^Closed dome shutter\\. Shutter state after closing ShutterClosed$", options);
+            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_SHUTTER_CLOSED, false, null));
+
+            // Dome stopped
+            re = new Regex("^Stopping all dome movement$", options);
+            _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_DOME_STOPPED, false, null));
+
             // Unpark scope
             re = new Regex("^Telescope ordered to unpark$", options);
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_UNPARK, false, null));
