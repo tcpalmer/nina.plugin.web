@@ -7,6 +7,9 @@ namespace Web.NINAPlugin.LogEvent {
         public const string NINA_STOP = "NINA-STOP";
         public const string NINA_PARK = "NINA-PARK";
         public const string NINA_UNPARK = "NINA-UNPARK";
+        public const string NINA_DOME_SHUTTER_OPENED = "NINA-DOME-SHUTTER-OPENED";
+        public const string NINA_DOME_SHUTTER_CLOSED = "NINA-DOME-SHUTTER-CLOSED";
+        public const string NINA_DOME_STOPPED = "NINA-DOME-STOPPED";
         public const string NINA_ADV_SEQ_START = "NINA-ADV-SEQ-START";
         public const string NINA_ADV_SEQ_STOP = "NINA-ADV-SEQ-STOP";
         public const string NINA_AF = "NINA-AF";
