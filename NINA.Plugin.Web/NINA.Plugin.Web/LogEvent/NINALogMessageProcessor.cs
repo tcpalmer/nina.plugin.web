@@ -17,6 +17,11 @@ namespace Web.NINAPlugin.LogEvent {
             Logger.Trace($"processing {messages.Count} new log messages");
 
             foreach (var line in messages) {
+
+                if (filterMessage(line)) {
+                    continue;
+                }
+
                 string[] parts = line.Split('|');
                 if (parts.Length == 6) {
                     string message = parts[5];
@@ -101,6 +106,18 @@ namespace Web.NINAPlugin.LogEvent {
             _matchers.Add(re, new EventMatcher(NINALogEvent.NINA_ERROR_PLATESOLVE, false, null));
 
             return _matchers;
+        }
+
+        private bool filterMessage(string line) {
+            if (line?.Length == 0) {
+                return true;
+            }
+
+            if (line.Contains("|DEBUG|") || line.Contains("|TRACE|")) {
+                return true;
+            }
+
+            return false;
         }
 
         public delegate NINALogEvent HandleMessageDelegate(EventMatcher eventMatcher, string msg, DateTime dateTime, Match match);

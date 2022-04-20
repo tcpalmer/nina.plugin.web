@@ -1,4 +1,5 @@
-﻿using Web.NINAPlugin.History;
+﻿using NINA.Core.Utility;
+using Web.NINAPlugin.History;
 using Web.NINAPlugin.LogEvent;
 
 namespace Web.NINAPlugin {
@@ -25,13 +26,21 @@ namespace Web.NINAPlugin {
             logWatcher.Start();
         }
 
-        public void Stop() {
-            handleEvent(null, new NINALogEvent(NINALogEvent.NINA_STOP));
+        public void Stop(bool addStopEvent) {
+            if (addStopEvent) {
+                handleEvent(null, new NINALogEvent(NINALogEvent.NINA_STOP));
+            }
+
             logWatcher.Stop();
             processor.NINALogEventSaved -= handleEvent;
         }
 
         private void handleEvent(object sender, NINALogEvent e) {
+            if (sessionHome == null) {
+                Logger.Warning("web session event watcher not initialized");
+                return;
+            }
+
             sessionHistoryManager.UpdateAddEvent(sessionHome, e);
         }
     }

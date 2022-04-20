@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Text;
 
@@ -14,7 +15,6 @@ namespace Web.NINAPlugin.Utility {
         /// <param name="overWrite"></param>
         /// <exception cref="IOException"></exception>
         public static void WriteJson(object obj, string fileName, bool overWrite = false) {
-
             if (obj == null) {
                 throw new IOException("WriteJson: null object");
             }
@@ -50,13 +50,22 @@ namespace Web.NINAPlugin.Utility {
         /// <returns></returns>
         /// <exception cref="IOException"></exception>
         public static T ReadJson<T>(string fileName) {
-
             if (!File.Exists(fileName)) {
                 throw new IOException($"ReadJson: file does not exist or is not readable: '{fileName}'");
             }
 
-            string json = File.ReadAllText(fileName);
-            return JsonConvert.DeserializeObject<T>(json);
+            FileInfo fileInfo = new FileInfo(fileName);
+            if (fileInfo.Length == 0) {
+                throw new IOException($"ReadJson: file has 0 bytes: '{fileName}'");
+            }
+
+            try {
+                string json = File.ReadAllText(fileName);
+                return JsonConvert.DeserializeObject<T>(json);
+            }
+            catch (Exception e) {
+                throw new IOException($"ReadJson: failed to read or deserialize: '{fileName}'");
+            }
         }
 
         /// <summary>
@@ -83,6 +92,5 @@ namespace Web.NINAPlugin.Utility {
                 return sb.ToString();
             }
         }
-
     }
 }

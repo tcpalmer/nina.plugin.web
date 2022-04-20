@@ -26,6 +26,7 @@ namespace Web.NINAPlugin.LogEvent {
 
             if (activeLogFile != null) {
                 Logger.Info($"web viewer: watching log file: {activeLogFile}");
+                stopped = false;
                 Watch(logDirectory, activeLogFile);
             }
         }
@@ -41,9 +42,10 @@ namespace Web.NINAPlugin.LogEvent {
 
         private void Watch(string logDirectory, string activeLogFile) {
             watcherThread = new Thread(() => {
+                FileSystemWatcher fsWatcher = null;
                 try {
                     autoReset = new AutoResetEvent(false);
-                    FileSystemWatcher fsWatcher = new FileSystemWatcher(logDirectory);
+                    fsWatcher = new FileSystemWatcher(logDirectory);
                     fsWatcher.Filter = activeLogFile;
                     fsWatcher.EnableRaisingEvents = true;
                     fsWatcher.Changed += (s, e) => autoReset.Set();
@@ -72,6 +74,11 @@ namespace Web.NINAPlugin.LogEvent {
                 }
                 catch (Exception e) {
                     if (e is ThreadAbortException) {
+                        if (fsWatcher != null) {
+                            fsWatcher.EnableRaisingEvents = false;
+                            fsWatcher.Dispose();
+                        }
+
                         Logger.Debug("web view log watcher has been stopped/aborted");
                     }
                     else {
