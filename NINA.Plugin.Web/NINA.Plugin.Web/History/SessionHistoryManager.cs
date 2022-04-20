@@ -142,15 +142,45 @@ namespace Web.NINAPlugin.History {
             JsonUtils.WriteJson(sessionList, sessionsListFile, true);
         }
 
+        public void RemoveEmptySessions() {
+            SessionList sessionList = GetSessionList();
+            foreach (Session session in sessionList.sessions) {
+                SessionHistory sessionHistory = null;
+                try {
+                    sessionHistory = ReadOldSessionHistory(session.key);
+                }
+                catch (Exception e) {
+                    Logger.Debug($"failed to read old session history, removing: {session.key} ({e.Message})");
+                    DeleteSession(session);
+                    sessionHistory = null;
+                }
+
+                if (sessionHistory?.events?.Count <= 2 &&
+                    sessionHistory?.autofocus?.Count == 0 &&
+                    sessionHistory?.targets?.Count == 0) {
+                    Logger.Debug($"old session history is empty or minimal, removing: {session.key}");
+                    DeleteSession(session);
+                }
+            }
+        }
+
         public void DeactivateOldSessions() {
             SessionList sessionList = GetSessionList();
             foreach (Session session in sessionList.sessions) {
-                SessionHistory sessionHistory = ReadOldSessionHistory(session.key);
-                if (sessionHistory.activeSession || sessionHistory.activeTargetId != null) {
-                    Logger.Debug($"marking session inactive: {session.key}");
-                    sessionHistory.activeSession = false;
-                    sessionHistory.activeTargetId = null;
-                    WriteOldSessionHistory(sessionHistory);
+                SessionHistory sessionHistory = null;
+                try {
+                    sessionHistory = ReadOldSessionHistory(session.key);
+                }
+                catch (Exception e) {
+                    Logger.Warning($"failed to read previous session history {session.key}, skipping: {e.Message}");
+                }
+
+                if (sessionHistory != null) {
+                    if (sessionHistory.activeSession || sessionHistory.activeTargetId != null) {
+                        sessionHistory.activeSession = false;
+                        sessionHistory.activeTargetId = null;
+                        WriteOldSessionHistory(sessionHistory);
+                    }
                 }
             }
         }
@@ -176,6 +206,11 @@ namespace Web.NINAPlugin.History {
         private string[] GetSessionHistoryDirectories() {
             string sessionsHome = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT);
             return Directory.GetDirectories(sessionsHome);
+        }
+
+        private void DeleteSession(Session session) {
+            string sessionDir = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, session.key);
+            Directory.Delete(sessionDir, true);
         }
 
         private SessionHistory ReadOldSessionHistory(string key) {

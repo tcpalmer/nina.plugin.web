@@ -8,23 +8,44 @@ using Web.NINAPlugin.History;
 namespace Web.NINAPlugin {
 
     public class ImageSaveWatcher {
+        private IImageSaveMediator imageSaveMediator;
         private bool WebPluginEnabled;
         private bool NonLightsEnabled;
+        private bool running = false;
 
         private SessionHistoryManager sessionHistoryManager;
         private string sessionHome;
 
         public ImageSaveWatcher(IImageSaveMediator imageSaveMediator) {
+            this.imageSaveMediator = imageSaveMediator;
             WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
             NonLightsEnabled = Properties.Settings.Default.NonLights;
             Properties.Settings.Default.PropertyChanged += SettingsChanged;
 
             sessionHistoryManager = new SessionHistoryManager();
-            imageSaveMediator.ImageSaved += ImageSaveMeditator_ImageSaved;
         }
 
         public void setSessionHome(string sessionHome) {
             this.sessionHome = sessionHome;
+        }
+
+        public void Start() {
+            if (sessionHome == null) {
+                Logger.Warning("can't start image save watcher, sessionHome not set");
+            }
+
+            Stop();
+            Logger.Debug("starting web session image save watcher");
+            imageSaveMediator.ImageSaved += ImageSaveMeditator_ImageSaved;
+            running = true;
+        }
+
+        public void Stop() {
+            if (running) {
+                Logger.Debug("stopping web session image save watcher");
+                imageSaveMediator.ImageSaved -= ImageSaveMeditator_ImageSaved;
+                running = false;
+            }
         }
 
         private void ImageSaveMeditator_ImageSaved(object sender, ImageSavedEventArgs msg) {
@@ -35,6 +56,11 @@ namespace Web.NINAPlugin {
 
             if (!isEnabledImageType(msg.MetaData.Image.ImageType)) {
                 Logger.Debug($"image type not enabled, skipping: {msg.MetaData.Image.ImageType}");
+                return;
+            }
+
+            if (sessionHome == null) {
+                Logger.Warning("can't add image to web session history, no active session");
                 return;
             }
 

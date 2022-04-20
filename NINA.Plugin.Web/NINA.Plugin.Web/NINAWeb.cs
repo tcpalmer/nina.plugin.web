@@ -33,16 +33,15 @@ namespace Web.NINAPlugin {
             }
 
             Settings.Default.PropertyChanged += SettingsChanged;
-
-            this.eventWatcher = new NINAEventWatcher();
-            this.autofocusEventWatcher = new AutofocusEventWatcher();
-            this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator);
-
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
-            InitializePlugin(profileService);
+
+            bool initStatus = InitializePlugin(imageSaveMediator, profileService);
+            if (!initStatus) {
+                throw new Exception("failed to initialize the web session history viewer plugin");
+            }
         }
 
-        private void InitializePlugin(IProfileService profileService) {
+        private bool InitializePlugin(IImageSaveMediator imageSaveMediator, IProfileService profileService) {
             try {
                 setWebUrls();
                 new HttpSetup().Initialize();
@@ -51,32 +50,48 @@ namespace Web.NINAPlugin {
 
                 // Clean up existing session histories
                 sessionHistoryManager.PurgeHistoryOlderThan(Settings.Default.PurgeDays);
+                sessionHistoryManager.RemoveEmptySessions();
                 sessionHistoryManager.DeactivateOldSessions();
+
+                this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator);
+                this.eventWatcher = new NINAEventWatcher();
+                this.autofocusEventWatcher = new AutofocusEventWatcher();
 
                 // Create a new session history for this run
                 string sessionHome = sessionHistoryManager.StartNewSessionHistory(profileService);
-                eventWatcher.setSessionHome(sessionHome);
                 imageSaveWatcher.setSessionHome(sessionHome);
+                eventWatcher.setSessionHome(sessionHome);
                 autofocusEventWatcher.setSessionHome(sessionHome);
                 sessionHistoryManager.InitializeSessionList();
 
                 if (WebPluginEnabled) {
                     HttpServerInstance.SetPort(WebServerPort);
                     HttpServerInstance.Start();
+                    imageSaveWatcher.Start();
                     eventWatcher.Start();
                     autofocusEventWatcher.Start();
                 }
+
+                return true;
             }
             catch (Exception ex) {
+                try {
+                    imageSaveWatcher?.Stop();
+                    eventWatcher?.Stop(false);
+                    autofocusEventWatcher?.Stop();
+                }
+                catch (Exception) { }
+
                 Logger.Error($"failed to initialize the web plugin: {ex} {ex.Source}, aborting");
-                return;
+                return false;
             }
         }
 
         public override Task Teardown() {
             try {
                 HttpServerInstance.Stop();
-                eventWatcher.Stop();
+                imageSaveWatcher.Stop();
+                eventWatcher.Stop(true);
                 autofocusEventWatcher.Stop();
                 sessionHistoryManager.Stop();
             }
@@ -175,12 +190,14 @@ namespace Web.NINAPlugin {
                     if (Settings.Default.WebPluginEnabled) {
                         HttpServerInstance.SetPort(Settings.Default.WebServerPort);
                         HttpServerInstance.Start();
+                        imageSaveWatcher.Start();
                         eventWatcher.Start();
                         autofocusEventWatcher.Start();
                     }
                     else {
                         HttpServerInstance.Stop();
-                        eventWatcher.Stop();
+                        imageSaveWatcher.Stop();
+                        eventWatcher.Stop(false);
                         autofocusEventWatcher.Stop();
                     }
                     break;

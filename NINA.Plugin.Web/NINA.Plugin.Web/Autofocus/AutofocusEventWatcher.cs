@@ -1,4 +1,5 @@
-﻿using Web.NINAPlugin.History;
+﻿using NINA.Core.Utility;
+using Web.NINAPlugin.History;
 
 namespace Web.NINAPlugin.Autofocus {
 
@@ -6,6 +7,7 @@ namespace Web.NINAPlugin.Autofocus {
         private SessionHistoryManager sessionHistoryManager;
         private AutofocusDirectoryWatcher autofocusDirectoryWatcher;
         private string sessionHome;
+        private bool running = false;
 
         public AutofocusEventWatcher() {
             sessionHistoryManager = new SessionHistoryManager();
@@ -17,16 +19,26 @@ namespace Web.NINAPlugin.Autofocus {
         }
 
         public void Start() {
+            Stop();
             autofocusDirectoryWatcher.AutofocusEventSaved += handleEvent;
             autofocusDirectoryWatcher.Start();
+            running = true;
         }
 
         public void Stop() {
-            autofocusDirectoryWatcher.Stop();
-            autofocusDirectoryWatcher.AutofocusEventSaved -= handleEvent;
+            if (running) {
+                autofocusDirectoryWatcher.Stop();
+                autofocusDirectoryWatcher.AutofocusEventSaved -= handleEvent;
+                running = false;
+            }
         }
 
         private void handleEvent(object sender, AutofocusEvent e) {
+            if (sessionHome == null) {
+                Logger.Warning("web session autofocus event watcher not initialized");
+                return;
+            }
+
             sessionHistoryManager.UpdateAddAutofocusEvent(sessionHome, e);
         }
     }

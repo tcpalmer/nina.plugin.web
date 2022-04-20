@@ -1,6 +1,8 @@
 # Web Session History Viewer
 
-## 1.1.X.X - 2022-0X-XX
+## 1.1.0.1 - 2022-04-20
+* Bug fix: fixed problems with loading of problematic session histories
+* Bug fix: better evaluation and handling of AF trend lines
 * Added dome events to timeline
 
 ## 1.1.0.0 - 2022-04-14
