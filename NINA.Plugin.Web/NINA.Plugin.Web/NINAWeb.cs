@@ -2,6 +2,7 @@
 using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
+using NINA.Profile;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
@@ -19,20 +20,28 @@ namespace Web.NINAPlugin {
 
     [Export(typeof(IPluginManifest))]
     public class WebPlugin : PluginBase, INotifyPropertyChanged {
+        public const bool WebPluginEnabledDefault = false;
+        public const int WebServerPortDefault = 80;
+        public const int PurgeDaysDefault = 10;
+        public const bool NonLightsDefault = false;
+
         private SessionHistoryManager sessionHistoryManager;
         private NINAEventWatcher eventWatcher;
         private AutofocusEventWatcher autofocusEventWatcher;
         private ImageSaveWatcher imageSaveWatcher;
+        private IPluginOptionsAccessor pluginSettings;
 
         [ImportingConstructor]
         public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory) {
-            if (Settings.Default.UpdateSettings) {
-                Settings.Default.Upgrade();
-                Settings.Default.UpdateSettings = false;
-                CoreUtil.SaveSettings(Settings.Default);
+            if (Properties.Settings.Default.UpdateSettings) {
+                Properties.Settings.Default.Upgrade();
+                Properties.Settings.Default.UpdateSettings = false;
+                CoreUtil.SaveSettings(Properties.Settings.Default);
             }
 
-            Settings.Default.PropertyChanged += SettingsChanged;
+            this.pluginSettings = new PluginOptionsAccessor(profileService, Guid.Parse(this.Identifier));
+            profileService.ProfileChanged += ProfileService_ProfileChanged;
+
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
 
             bool initStatus = InitializePlugin(imageSaveMediator, profileService);
@@ -49,11 +58,11 @@ namespace Web.NINAPlugin {
                 sessionHistoryManager = new SessionHistoryManager();
 
                 // Clean up existing session histories
-                sessionHistoryManager.PurgeHistoryOlderThan(Settings.Default.PurgeDays);
+                sessionHistoryManager.PurgeHistoryOlderThan(PurgeDays);
                 sessionHistoryManager.RemoveEmptySessions();
                 sessionHistoryManager.DeactivateOldSessions();
 
-                this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator);
+                this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator, pluginSettings);
                 this.eventWatcher = new NINAEventWatcher();
                 this.autofocusEventWatcher = new AutofocusEventWatcher();
 
@@ -87,6 +96,13 @@ namespace Web.NINAPlugin {
             }
         }
 
+        private void ProfileService_ProfileChanged(object sender, EventArgs e) {
+            RaisePropertyChanged(nameof(WebPluginEnabled));
+            RaisePropertyChanged(nameof(PurgeDays));
+            RaisePropertyChanged(nameof(WebServerPort));
+            RaisePropertyChanged(nameof(NonLights));
+        }
+
         public override Task Teardown() {
             try {
                 HttpServerInstance.Stop();
@@ -103,70 +119,66 @@ namespace Web.NINAPlugin {
         }
 
         public bool WebPluginEnabled {
-            get => Settings.Default.WebPluginEnabled;
+            get => pluginSettings.GetValueBoolean(nameof(WebPluginEnabled), WebPluginEnabledDefault);
             set {
-                Settings.Default.WebPluginEnabled = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueBoolean(nameof(WebPluginEnabled), value);
                 RaisePropertyChanged();
             }
         }
 
         public int WebServerPort {
-            get => Settings.Default.WebServerPort;
+            get => pluginSettings.GetValueInt32(nameof(WebServerPort), WebServerPortDefault);
             set {
-                Settings.Default.WebServerPort = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueInt32(nameof(WebServerPort), value);
                 RaisePropertyChanged();
             }
         }
 
         public int PurgeDays {
-            get => Settings.Default.PurgeDays;
+            get => pluginSettings.GetValueInt32(nameof(PurgeDays), PurgeDaysDefault);
             set {
-                Settings.Default.PurgeDays = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueInt32(nameof(PurgeDays), value);
                 RaisePropertyChanged();
             }
         }
 
         public bool NonLights {
-            get => Settings.Default.NonLights;
+            get => pluginSettings.GetValueBoolean(nameof(NonLights), NonLightsDefault);
             set {
-                Settings.Default.NonLights = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueBoolean(nameof(NonLights), value);
                 RaisePropertyChanged();
             }
         }
 
         public string LocalAddress {
-            get => Settings.Default.LocalAddress;
+            get => Properties.Settings.Default.LocalAddress;
             set {
-                Settings.Default.LocalAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.LocalAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         public string LocalNetworkAddress {
-            get => Settings.Default.LocalNetworkAddress;
+            get => Properties.Settings.Default.LocalNetworkAddress;
             set {
-                Settings.Default.LocalNetworkAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.LocalNetworkAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         public string HostAddress {
-            get => Settings.Default.HostAddress;
+            get => Properties.Settings.Default.HostAddress;
             set {
-                Settings.Default.HostAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.HostAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         private void setWebUrls() {
-            Dictionary<string, string> urls = new HttpServer(Settings.Default.WebServerPort, null).GetURLs();
+            Dictionary<string, string> urls = new HttpServer(WebServerPort, null).GetURLs();
             LocalAddress = urls[HttpServer.LOCALHOST_KEY];
 
             if (urls.ContainsKey(HttpServer.IP_KEY)) {
@@ -182,13 +194,11 @@ namespace Web.NINAPlugin {
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
-        private void SettingsChanged(object sender, PropertyChangedEventArgs e) {
-            switch (e.PropertyName) {
+            switch (propertyName) {
                 case "WebPluginEnabled":
-                    if (Settings.Default.WebPluginEnabled) {
-                        HttpServerInstance.SetPort(Settings.Default.WebServerPort);
+                    if (WebPluginEnabled) {
+                        HttpServerInstance.SetPort(WebServerPort);
                         HttpServerInstance.Start();
                         imageSaveWatcher.Start();
                         eventWatcher.Start();
@@ -205,9 +215,36 @@ namespace Web.NINAPlugin {
                 case "WebServerPort":
                     setWebUrls();
                     // Change the port, will auto-restart if already running
-                    HttpServerInstance.SetPort(Settings.Default.WebServerPort);
+                    HttpServerInstance.SetPort(WebServerPort);
                     break;
             }
         }
+
+        /* TODO: don't think this is used
+        private void SettingsChanged(object sender, PropertyChangedEventArgs e) {
+            switch (e.PropertyName) {
+                case "WebPluginEnabled":
+                    if (WebPluginEnabled) {
+                        HttpServerInstance.SetPort(WebServerPort);
+                        HttpServerInstance.Start();
+                        imageSaveWatcher.Start();
+                        eventWatcher.Start();
+                        autofocusEventWatcher.Start();
+                    }
+                    else {
+                        HttpServerInstance.Stop();
+                        imageSaveWatcher.Stop();
+                        eventWatcher.Stop(false);
+                        autofocusEventWatcher.Stop();
+                    }
+                    break;
+
+                case "WebServerPort":
+                    setWebUrls();
+                    // Change the port, will auto-restart if already running
+                    HttpServerInstance.SetPort(WebServerPort);
+                    break;
+            }
+        }*/
     }
 }

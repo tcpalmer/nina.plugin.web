@@ -1,5 +1,9 @@
 # Web Session History Viewer
 
+## 1.1.2.0 - 2022-XX-XX
+* Plugin options are now saved per NINA profile
+* Web server will now automatically redirect root path requests
+
 ## 1.1.0.1 - 2022-04-20
 * Bug fix: fixed problems with loading of problematic session histories
 * Bug fix: better evaluation and handling of AF trend lines

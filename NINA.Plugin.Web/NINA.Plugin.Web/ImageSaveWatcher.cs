@@ -1,26 +1,23 @@
 ﻿using NINA.Core.Utility;
 using NINA.Equipment.Model;
+using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
-using System.ComponentModel;
 using Web.NINAPlugin.History;
 
 namespace Web.NINAPlugin {
 
     public class ImageSaveWatcher {
         private IImageSaveMediator imageSaveMediator;
-        private bool WebPluginEnabled;
-        private bool NonLightsEnabled;
+        private IPluginOptionsAccessor pluginSettings;
         private bool running = false;
 
         private SessionHistoryManager sessionHistoryManager;
         private string sessionHome;
 
-        public ImageSaveWatcher(IImageSaveMediator imageSaveMediator) {
+        public ImageSaveWatcher(IImageSaveMediator imageSaveMediator, IPluginOptionsAccessor pluginSettings) {
             this.imageSaveMediator = imageSaveMediator;
-            WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
-            NonLightsEnabled = Properties.Settings.Default.NonLights;
-            Properties.Settings.Default.PropertyChanged += SettingsChanged;
+            this.pluginSettings = pluginSettings;
 
             sessionHistoryManager = new SessionHistoryManager();
         }
@@ -49,7 +46,7 @@ namespace Web.NINAPlugin {
         }
 
         private void ImageSaveMeditator_ImageSaved(object sender, ImageSavedEventArgs msg) {
-            if (!WebPluginEnabled) {
+            if (!isWebPluginEnabled()) {
                 Logger.Debug("web plugin not enabled");
                 return;
             }
@@ -77,7 +74,7 @@ namespace Web.NINAPlugin {
                 return false;
             }
 
-            if (!NonLightsEnabled) {
+            if (!isNonLightsEnabled()) {
                 return imageType == CaptureSequence.ImageTypes.LIGHT;
             }
 
@@ -113,16 +110,12 @@ namespace Web.NINAPlugin {
             return msg.MetaData.Target.Name;
         }
 
-        private void SettingsChanged(object sender, PropertyChangedEventArgs e) {
-            switch (e.PropertyName) {
-                case "WebPluginEnabled":
-                    WebPluginEnabled = Properties.Settings.Default.WebPluginEnabled;
-                    break;
+        private bool isWebPluginEnabled() {
+            return pluginSettings.GetValueBoolean("WebPluginEnabled", WebPlugin.WebPluginEnabledDefault);
+        }
 
-                case "NonLights":
-                    NonLightsEnabled = Properties.Settings.Default.NonLights;
-                    break;
-            }
+        private bool isNonLightsEnabled() {
+            return pluginSettings.GetValueBoolean("NonLights", WebPlugin.NonLightsDefault);
         }
     }
 }
