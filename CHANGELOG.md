@@ -1,8 +1,10 @@
 # Web Session History Viewer
 
-## 1.1.2.0 - 2022-XX-XX
+## 1.1.2.0 - 2022-05-XX
 * Plugin options are now saved per NINA profile
+* Now supports running another instance of NINA in 'share' mode
 * Web server will now automatically redirect root path requests
+* Bug fix: fixed issue with domain of Y axes in quality chart
 
 ## 1.1.0.1 - 2022-04-20
 * Bug fix: fixed problems with loading of problematic session histories

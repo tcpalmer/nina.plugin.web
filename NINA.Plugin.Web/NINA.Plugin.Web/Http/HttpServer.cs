@@ -37,7 +37,7 @@ namespace Web.NINAPlugin.Http {
             string urlPort = port == 80 ? "" : $":{port}";
 
             foreach (KeyValuePair<string, string> entry in names) {
-                urls.Add(entry.Key, $"http://{entry.Value}{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
+                urls.Add(entry.Key, $"http://{entry.Value}{urlPort}");
             }
 
             return urls;

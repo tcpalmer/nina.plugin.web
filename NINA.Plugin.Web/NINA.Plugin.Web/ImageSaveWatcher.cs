@@ -46,8 +46,8 @@ namespace Web.NINAPlugin {
         }
 
         private void ImageSaveMeditator_ImageSaved(object sender, ImageSavedEventArgs msg) {
-            if (!isWebPluginEnabled()) {
-                Logger.Debug("web plugin not enabled");
+            if (!isPluginActive()) {
+                Logger.Debug("web plugin not active");
                 return;
             }
 
@@ -110,12 +110,13 @@ namespace Web.NINAPlugin {
             return msg.MetaData.Target.Name;
         }
 
-        private bool isWebPluginEnabled() {
-            return pluginSettings.GetValueBoolean("WebPluginEnabled", WebPlugin.WebPluginEnabledDefault);
+        private bool isPluginActive() {
+            string state = pluginSettings.GetValueString(nameof(WebPlugin.WebPluginState), WebPlugin.WebPluginStateDefault);
+            return state.Equals(WebPlugin.WebPluginStateON) || state.Equals(WebPlugin.WebPluginStateSHARE);
         }
 
         private bool isNonLightsEnabled() {
-            return pluginSettings.GetValueBoolean("NonLights", WebPlugin.NonLightsDefault);
+            return pluginSettings.GetValueBoolean(nameof(WebPlugin.NonLights), WebPlugin.NonLightsDefault);
         }
     }
 }

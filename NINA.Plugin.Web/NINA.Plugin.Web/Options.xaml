@@ -15,14 +15,22 @@
                     Width="110"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
-                    <TextBlock.Text>Web Plugin Enabled</TextBlock.Text>
-                    <TextBlock.ToolTip>Enable/disable the web plugin/server</TextBlock.ToolTip>
+                    <TextBlock.Text>Web Plugin State</TextBlock.Text>
+                    <TextBlock.ToolTip>Set the state of the Web plugin/server</TextBlock.ToolTip>
                 </TextBlock>
-                <CheckBox
+                <ComboBox
                     MinWidth="40"
                     Margin="20,0,0,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding WebPluginEnabled}" />
+                    ItemsSource="{Binding WebPluginStates}"
+                    SelectedValue="{Binding WebPluginState, Mode=TwoWay}" />
+                <TextBlock Width="200"
+                           Margin="8,0,0,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center">
+                    <TextBlock.Inlines>
+                        <Run FontStyle="Italic" Text="See below for explanation of states" />
+                    </TextBlock.Inlines>
+                </TextBlock>
             </StackPanel>
             <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
                 <TextBlock
@@ -52,18 +60,19 @@
                     VerticalAlignment="Center"
                     Text="{Binding PurgeDays}" />
             </StackPanel>
-            <StackPanel Margin="0,0,0,5"
-                        Orientation="Horizontal">
-                <TextBlock Width="110"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center">
+            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                <TextBlock
+                    Width="110"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
                     <TextBlock.Text>Support non-lights</TextBlock.Text>
                     <TextBlock.ToolTip>Support non-light images: flats, darks, dark-flats</TextBlock.ToolTip>
                 </TextBlock>
-                <CheckBox MinWidth="40"
-                          Margin="20,0,0,0"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding NonLights}" />
+                <CheckBox
+                    MinWidth="40"
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding NonLights}" />
             </StackPanel>
 
             <Separator
@@ -80,7 +89,7 @@
                         Width="20"
                         Height="5"
                         Background="Transparent" />
-                    <TextBlock TextWrapping="Wrap">If the plugin is enabled, the Web app can be accessed at the following URLs:</TextBlock>
+                    <TextBlock TextWrapping="Wrap">If the plugin state is ON, the Web app can be accessed at the following URLs:</TextBlock>
                     <Separator
                         Width="20"
                         Height="5"
