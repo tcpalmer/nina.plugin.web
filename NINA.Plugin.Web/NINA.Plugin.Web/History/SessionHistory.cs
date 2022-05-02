@@ -14,6 +14,7 @@ namespace Web.NINAPlugin.History {
         public string pluginVersion { get; set; }
         public int sessionVersion { get; set; }
         public DateTime startTime { get; set; }
+        public string profileName { get; set; }
         public bool activeSession { get; set; }
         public string activeTargetId { get; set; }
         public StretchOptions stretchOptions { get; set; }
@@ -30,6 +31,7 @@ namespace Web.NINAPlugin.History {
             pluginVersion = GetType().Assembly.GetName().Version.ToString();
             sessionVersion = 0;
             this.startTime = startTime;
+            this.profileName = profileService.ActiveProfile.Name;
             this.stretchOptions = new StretchOptions(profileService);
             events = new List<NINALogEvent>();
             autofocus = new List<AutofocusEvent>();

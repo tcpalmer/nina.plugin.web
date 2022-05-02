@@ -1,4 +1,5 @@
 ﻿using NINA.Core.Utility;
+using NINA.Core.Utility.Notification;
 using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
@@ -250,12 +251,14 @@ namespace Web.NINAPlugin {
                     HttpServerInstance.SetPort(WebServerPort);
                     HttpServerInstance.Start();
                     startAllWatchers();
+                    Notification.ShowSuccess($"Web plugin in ON mode");
                     return;
                 }
 
                 // OFF -> SHARE: start watchers
                 if (WebPluginState.Equals(WebPluginStateSHARE)) {
                     startAllWatchers();
+                    Notification.ShowSuccess($"Web plugin in SHARE mode");
                     return;
                 }
             }
@@ -265,12 +268,14 @@ namespace Web.NINAPlugin {
                 if (WebPluginState.Equals(WebPluginStateOFF)) {
                     HttpServerInstance.Stop();
                     stopAllWatchers(false);
+                    Notification.ShowSuccess($"Web plugin in OFF mode");
                     return;
                 }
 
                 // ON -> SHARE: stop server
                 if (WebPluginState.Equals(WebPluginStateSHARE)) {
                     HttpServerInstance.Stop();
+                    Notification.ShowSuccess($"Web plugin in SHARE mode");
                     return;
                 }
             }
@@ -279,12 +284,15 @@ namespace Web.NINAPlugin {
                 // SHARE -> OFF: stop watchers
                 if (WebPluginState.Equals(WebPluginStateOFF)) {
                     stopAllWatchers(false);
+                    Notification.ShowSuccess($"Web plugin in OFF mode");
                     return;
                 }
 
                 // SHARE -> ON: start server
                 if (WebPluginState.Equals(WebPluginStateON)) {
+                    HttpServerInstance.SetPort(WebServerPort);
                     HttpServerInstance.Start();
+                    Notification.ShowSuccess($"Web plugin in ON mode");
                     return;
                 }
             }
