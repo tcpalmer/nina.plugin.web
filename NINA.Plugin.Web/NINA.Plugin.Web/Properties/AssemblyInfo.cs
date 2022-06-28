@@ -12,8 +12,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("1.1.0.1")]
-[assembly: AssemblyFileVersion("1.1.0.1")]
+[assembly: AssemblyVersion("1.1.2.0")]
+[assembly: AssemblyFileVersion("1.1.2.0")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "2.0.0.2059")]
@@ -29,7 +29,18 @@ using System.Runtime.InteropServices;
 
 The actual URLs to access the Web app will be displayed above once the plugin is installed.  The IP Address URL will use the IP of the computer running NINA.  Assuming this IP/port are available on your local network, any device (e.g. phone or tablet) can connect.  See network notes below.
 
-## Web App Usage
+## Web Plugin State ##
+The plugin can be in one of three states:
+* OFF: the plugin is inactive and no HTTP server will be started.
+* ON: the plugin is active and the HTTP server will be started, accessible at one of the URLs shown above.
+* SHARE: if you run a second instance of NINA, you can set the plugin to ON in the first instance and SHARE in the second.  In the SHARE instance, the plugin will be active, but no additional HTTP server will be started.
+
+Only use SHARE if you're running a second instance of NINA on the same computer.  In this mode of operation:
+* Use the URLs shown in the ON instance to open the Web client, not those shown on the SHARE instance.
+* In the Web client, you'll see two separate active sessions in the Sessions dropdown menu (distinguishable only by the instance start time).  You can switch between them or open another browser tab to view both.
+* Each session will only track events associated with that instance of NINA.
+
+## Web App Usage ##
 * By default, the plugin will keep the most recent 10 days of session history.  If you start NINA and enable the Web Plugin, then any available past sessions can be viewed in the Web app.  You can change the number of days to keep in the options.
 * As soon as the Web plugin is enabled, you can begin viewing the new session in a browser (select it from the Sessions dropdown).  Initially, only the NINA Start event will appear in the event timeline.  However, the Web app will begin checking for updates (new events and saved images) and display them.
 * The event timeline will show various events of interest (NINA start/stop, sequence start/stop, center/platesolve, autofocus, meridian flip, etc) as well as all saved images grouped by filter.  You can hover over events (or press on touch-enabled devices) to see details like event types/times, image acquisition info and thumbnail, and autofocus curves.
@@ -45,7 +56,7 @@ The actual URLs to access the Web app will be displayed above once the plugin is
 * If the Web app is in a weird state, just click reload in the browser.
 * Session history and Web server logs are stored in the WebPlugin directory under the main NINA directory.
 
-## Network Notes
+## Network Notes ##
 
 If you only want to use the Web app from a browser running directly on the computer running NINA, you're all set.  However, you can also use the Web app from any device on your local network.  To do so it's usually sufficient to configure NINA to communicate through your firewall:
 * Open Settings and search for Windows Defender Firewall
@@ -58,10 +69,10 @@ In addition to the URLs shown above, you should be able to use any domain name t
 
 If this doesn't work you'll need to search around and figure it out - anything else is beyond the scope of this.
 
-## Getting Help
+# Getting Help #
 * Ask for help in the #plugin-discussions channel on the NINA project [Discord server](https://discord.com/invite/rWRbVbw).
 * [Plugin source code](https://github.com/tcpalmer/nina.plugin.web)
-* [Web app source code](https://github.com/tcpalmer/nina.plugin.web.client)
+* [Web client source code](https://github.com/tcpalmer/nina.plugin.web.client)
 * [Change log](https://github.com/tcpalmer/nina.plugin.web/blob/main/CHANGELOG.md)
 
 The Web Session History Viewer is provided 'as is' under the terms of the [Mozilla Public License 2.0](https://github.com/tcpalmer/nina.plugin.web/blob/main/LICENSE.txt)

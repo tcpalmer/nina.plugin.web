@@ -1,4 +1,5 @@
 ﻿using EmbedIO;
+using EmbedIO.Actions;
 using EmbedIO.WebApi;
 using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
@@ -15,7 +16,6 @@ using Web.NINAPlugin.Http.Api1020;
 namespace Web.NINAPlugin.Http {
 
     public class HttpServer {
-
         public static readonly string HOST_KEY = "HostName";
         public static readonly string IP_KEY = "IPAddress";
         public static readonly string LOCALHOST_KEY = "LocalHost";
@@ -37,14 +37,13 @@ namespace Web.NINAPlugin.Http {
             string urlPort = port == 80 ? "" : $":{port}";
 
             foreach (KeyValuePair<string, string> entry in names) {
-                urls.Add(entry.Key, $"http://{entry.Value}{urlPort}/{HttpSetup.WEB_CLIENT_DIR}");
+                urls.Add(entry.Key, $"http://{entry.Value}{urlPort}");
             }
 
             return urls;
         }
 
         public void Start() {
-
             try {
                 serverThread = new Thread(WebServerTask);
                 serverThread.Name = "Web Server Thread";
@@ -109,13 +108,18 @@ namespace Web.NINAPlugin.Http {
                 .WithMode(HttpListenerMode.EmbedIO))
                 .WithWebApi("/api/1020", m => m
                     .WithController<ApiV1020Controller>(MyFactory))
-                //.WithWebApi("/api/1020", m => m
-                //   .WithController<ApiV1020Controller>())
+                .WithModule(GetRootPathRedirect())
                 .WithStaticFolder("/", webClientPath, false);
         }
 
         private ApiV1020Controller MyFactory() {
             return new ApiV1020Controller(new ImageSupport(imageDataFactory));
+        }
+
+        private RedirectModule GetRootPathRedirect() {
+            return new RedirectModule("/", "/dist", request => {
+                return request.RequestedPath.Equals("/");
+            });
         }
 
         private void ConfigureLogging() {
@@ -164,5 +168,4 @@ namespace Web.NINAPlugin.Http {
             return null;
         }
     }
-
 }

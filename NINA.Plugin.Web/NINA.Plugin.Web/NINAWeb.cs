@@ -1,38 +1,53 @@
 ﻿using NINA.Core.Utility;
+using NINA.Core.Utility.Notification;
 using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
+using NINA.Profile;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Web.NINAPlugin.Autofocus;
 using Web.NINAPlugin.History;
 using Web.NINAPlugin.Http;
-using Web.NINAPlugin.Properties;
 
 namespace Web.NINAPlugin {
 
     [Export(typeof(IPluginManifest))]
     public class WebPlugin : PluginBase, INotifyPropertyChanged {
+        public const string WebPluginStateOFF = "OFF";
+        public const string WebPluginStateON = "ON";
+        public const string WebPluginStateSHARE = "SHARE";
+        public const string WebPluginStateDefault = WebPluginStateOFF;
+
+        public const int WebServerPortDefault = 80;
+        public const int PurgeDaysDefault = 10;
+        public const bool NonLightsDefault = false;
+
+        private string WebPluginStateCurrent = WebPluginStateOFF;
         private SessionHistoryManager sessionHistoryManager;
         private NINAEventWatcher eventWatcher;
         private AutofocusEventWatcher autofocusEventWatcher;
         private ImageSaveWatcher imageSaveWatcher;
+        private IPluginOptionsAccessor pluginSettings;
 
         [ImportingConstructor]
         public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory) {
-            if (Settings.Default.UpdateSettings) {
-                Settings.Default.Upgrade();
-                Settings.Default.UpdateSettings = false;
-                CoreUtil.SaveSettings(Settings.Default);
+            if (Properties.Settings.Default.UpdateSettings) {
+                Properties.Settings.Default.Upgrade();
+                Properties.Settings.Default.UpdateSettings = false;
+                CoreUtil.SaveSettings(Properties.Settings.Default);
             }
 
-            Settings.Default.PropertyChanged += SettingsChanged;
+            this.pluginSettings = new PluginOptionsAccessor(profileService, Guid.Parse(this.Identifier));
+            profileService.ProfileChanged += ProfileService_ProfileChanged;
+
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
 
             bool initStatus = InitializePlugin(imageSaveMediator, profileService);
@@ -49,11 +64,9 @@ namespace Web.NINAPlugin {
                 sessionHistoryManager = new SessionHistoryManager();
 
                 // Clean up existing session histories
-                sessionHistoryManager.PurgeHistoryOlderThan(Settings.Default.PurgeDays);
-                sessionHistoryManager.RemoveEmptySessions();
-                sessionHistoryManager.DeactivateOldSessions();
+                sessionHistoryManager.PurgeHistoryOlderThan(PurgeDays);
 
-                this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator);
+                this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator, pluginSettings);
                 this.eventWatcher = new NINAEventWatcher();
                 this.autofocusEventWatcher = new AutofocusEventWatcher();
 
@@ -64,21 +77,16 @@ namespace Web.NINAPlugin {
                 autofocusEventWatcher.setSessionHome(sessionHome);
                 sessionHistoryManager.InitializeSessionList();
 
-                if (WebPluginEnabled) {
-                    HttpServerInstance.SetPort(WebServerPort);
-                    HttpServerInstance.Start();
-                    imageSaveWatcher.Start();
-                    eventWatcher.Start();
-                    autofocusEventWatcher.Start();
+                if (isPluginActive()) {
+                    changePluginState();
+                    WebPluginStateCurrent = WebPluginState;
                 }
 
                 return true;
             }
             catch (Exception ex) {
                 try {
-                    imageSaveWatcher?.Stop();
-                    eventWatcher?.Stop(false);
-                    autofocusEventWatcher?.Stop();
+                    stopAllWatchers(false);
                 }
                 catch (Exception) { }
 
@@ -87,13 +95,22 @@ namespace Web.NINAPlugin {
             }
         }
 
+        private void ProfileService_ProfileChanged(object sender, EventArgs e) {
+            RaisePropertyChanged(nameof(WebPluginState));
+            RaisePropertyChanged(nameof(PurgeDays));
+            RaisePropertyChanged(nameof(WebServerPort));
+            RaisePropertyChanged(nameof(NonLights));
+        }
+
         public override Task Teardown() {
             try {
                 HttpServerInstance.Stop();
-                imageSaveWatcher.Stop();
-                eventWatcher.Stop(true);
-                autofocusEventWatcher.Stop();
+                stopAllWatchers(true);
                 sessionHistoryManager.Stop();
+                if (lastNINARunning()) {
+                    sessionHistoryManager.RemoveEmptySessions();
+                    sessionHistoryManager.DeactivateOldSessions();
+                }
             }
             catch (Exception ex) {
                 Logger.Error($"failed to stop web server or event watchers at teardown time: {ex}");
@@ -102,71 +119,77 @@ namespace Web.NINAPlugin {
             return base.Teardown();
         }
 
-        public bool WebPluginEnabled {
-            get => Settings.Default.WebPluginEnabled;
+        public IEnumerable<string> WebPluginStates {
+            get {
+                string[] states = { WebPluginStateOFF, WebPluginStateON, WebPluginStateSHARE };
+                return Array.AsReadOnly(states);
+            }
+        }
+
+        public string WebPluginState {
+            get => pluginSettings.GetValueString(nameof(WebPluginState), WebPluginStateDefault);
             set {
-                Settings.Default.WebPluginEnabled = value;
-                Settings.Default.Save();
-                RaisePropertyChanged();
+                string current = pluginSettings.GetValueString(nameof(WebPluginState), WebPluginStateDefault);
+                if (!value.Equals(current)) {
+                    pluginSettings.SetValueString(nameof(WebPluginState), value);
+                    RaisePropertyChanged();
+                }
             }
         }
 
         public int WebServerPort {
-            get => Settings.Default.WebServerPort;
+            get => pluginSettings.GetValueInt32(nameof(WebServerPort), WebServerPortDefault);
             set {
-                Settings.Default.WebServerPort = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueInt32(nameof(WebServerPort), value);
                 RaisePropertyChanged();
             }
         }
 
         public int PurgeDays {
-            get => Settings.Default.PurgeDays;
+            get => pluginSettings.GetValueInt32(nameof(PurgeDays), PurgeDaysDefault);
             set {
-                Settings.Default.PurgeDays = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueInt32(nameof(PurgeDays), value);
                 RaisePropertyChanged();
             }
         }
 
         public bool NonLights {
-            get => Settings.Default.NonLights;
+            get => pluginSettings.GetValueBoolean(nameof(NonLights), NonLightsDefault);
             set {
-                Settings.Default.NonLights = value;
-                Settings.Default.Save();
+                pluginSettings.SetValueBoolean(nameof(NonLights), value);
                 RaisePropertyChanged();
             }
         }
 
         public string LocalAddress {
-            get => Settings.Default.LocalAddress;
+            get => Properties.Settings.Default.LocalAddress;
             set {
-                Settings.Default.LocalAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.LocalAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         public string LocalNetworkAddress {
-            get => Settings.Default.LocalNetworkAddress;
+            get => Properties.Settings.Default.LocalNetworkAddress;
             set {
-                Settings.Default.LocalNetworkAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.LocalNetworkAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         public string HostAddress {
-            get => Settings.Default.HostAddress;
+            get => Properties.Settings.Default.HostAddress;
             set {
-                Settings.Default.HostAddress = value;
-                Settings.Default.Save();
+                Properties.Settings.Default.HostAddress = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged();
             }
         }
 
         private void setWebUrls() {
-            Dictionary<string, string> urls = new HttpServer(Settings.Default.WebServerPort, null).GetURLs();
+            Dictionary<string, string> urls = new HttpServer(WebServerPort, null).GetURLs();
             LocalAddress = urls[HttpServer.LOCALHOST_KEY];
 
             if (urls.ContainsKey(HttpServer.IP_KEY)) {
@@ -178,36 +201,126 @@ namespace Web.NINAPlugin {
             }
         }
 
+        private bool isPluginActive() {
+            return WebPluginState.Equals(WebPluginStateON) || WebPluginState.Equals(WebPluginStateSHARE);
+        }
+
+        private void startAllWatchers() {
+            imageSaveWatcher.Start();
+            eventWatcher.Start();
+            autofocusEventWatcher.Start();
+        }
+
+        private void stopAllWatchers(bool addStopEvent) {
+            imageSaveWatcher.Stop();
+            eventWatcher.Stop(addStopEvent);
+            autofocusEventWatcher.Stop();
+        }
+
+        private bool lastNINARunning() {
+            try {
+                string ninaProcessName = Process.GetCurrentProcess().ProcessName;
+                Process[] ninaProcesses = Process.GetProcessesByName(ninaProcessName);
+
+                if (ninaProcesses.Length == 1) {
+                    Logger.Debug("Last NINA running, Web viewer session clean up ...");
+                    return true;
+                }
+                else {
+                    Logger.Debug("Not the last NINA running, Web viewer skipping session clean up");
+                    return false;
+                }
+            }
+            catch (Exception e) {
+                Logger.Warning($"exception determining running NINA instances: {e.Message}");
+                return false;
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
-        private void SettingsChanged(object sender, PropertyChangedEventArgs e) {
-            switch (e.PropertyName) {
-                case "WebPluginEnabled":
-                    if (Settings.Default.WebPluginEnabled) {
-                        HttpServerInstance.SetPort(Settings.Default.WebServerPort);
-                        HttpServerInstance.Start();
-                        imageSaveWatcher.Start();
-                        eventWatcher.Start();
-                        autofocusEventWatcher.Start();
-                    }
-                    else {
-                        HttpServerInstance.Stop();
-                        imageSaveWatcher.Stop();
-                        eventWatcher.Stop(false);
-                        autofocusEventWatcher.Stop();
-                    }
+            switch (propertyName) {
+                case nameof(WebPluginState):
+                    changePluginState();
+                    WebPluginStateCurrent = WebPluginState;
                     break;
 
-                case "WebServerPort":
+                case nameof(WebServerPort):
                     setWebUrls();
                     // Change the port, will auto-restart if already running
-                    HttpServerInstance.SetPort(Settings.Default.WebServerPort);
+                    HttpServerInstance.SetPort(WebServerPort);
                     break;
             }
+        }
+
+        private void changePluginState() {
+            Logger.Info($"Web plugin state change from {WebPluginStateCurrent} to {WebPluginState}");
+
+            /*
+             * OFF -> ON:    start server and watchers
+             * OFF -> SHARE: start watchers
+             * ON  -> OFF:   stop server and watchers
+             * ON  -> SHARE: stop server
+             * SHARE -> OFF: stop watchers
+             * SHARE -> ON:  start server
+             */
+
+            if (WebPluginStateCurrent.Equals(WebPluginStateOFF)) {
+                // OFF -> ON: start server and watchers
+                if (WebPluginState.Equals(WebPluginStateON)) {
+                    HttpServerInstance.SetPort(WebServerPort);
+                    HttpServerInstance.Start();
+                    startAllWatchers();
+                    Notification.ShowSuccess($"Web plugin in ON mode");
+                    return;
+                }
+
+                // OFF -> SHARE: start watchers
+                if (WebPluginState.Equals(WebPluginStateSHARE)) {
+                    startAllWatchers();
+                    Notification.ShowSuccess($"Web plugin in SHARE mode");
+                    return;
+                }
+            }
+
+            if (WebPluginStateCurrent.Equals(WebPluginStateON)) {
+                // ON -> OFF: stop server and watchers
+                if (WebPluginState.Equals(WebPluginStateOFF)) {
+                    HttpServerInstance.Stop();
+                    stopAllWatchers(false);
+                    Notification.ShowSuccess($"Web plugin in OFF mode");
+                    return;
+                }
+
+                // ON -> SHARE: stop server
+                if (WebPluginState.Equals(WebPluginStateSHARE)) {
+                    HttpServerInstance.Stop();
+                    Notification.ShowSuccess($"Web plugin in SHARE mode");
+                    return;
+                }
+            }
+
+            if (WebPluginStateCurrent.Equals(WebPluginStateSHARE)) {
+                // SHARE -> OFF: stop watchers
+                if (WebPluginState.Equals(WebPluginStateOFF)) {
+                    stopAllWatchers(false);
+                    Notification.ShowSuccess($"Web plugin in OFF mode");
+                    return;
+                }
+
+                // SHARE -> ON: start server
+                if (WebPluginState.Equals(WebPluginStateON)) {
+                    HttpServerInstance.SetPort(WebServerPort);
+                    HttpServerInstance.Start();
+                    Notification.ShowSuccess($"Web plugin in ON mode");
+                    return;
+                }
+            }
+
+            Logger.Error($"failed to switch Web Plugin state from current: {WebPluginStateCurrent} to new: {WebPluginState}");
         }
     }
 }
