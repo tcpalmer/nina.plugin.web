@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Web.NINAPlugin.Autofocus;
@@ -106,8 +107,10 @@ namespace Web.NINAPlugin {
                 HttpServerInstance.Stop();
                 stopAllWatchers(true);
                 sessionHistoryManager.Stop();
-                sessionHistoryManager.RemoveEmptySessions();
-                sessionHistoryManager.DeactivateOldSessions();
+                if (lastNINARunning()) {
+                    sessionHistoryManager.RemoveEmptySessions();
+                    sessionHistoryManager.DeactivateOldSessions();
+                }
             }
             catch (Exception ex) {
                 Logger.Error($"failed to stop web server or event watchers at teardown time: {ex}");
@@ -212,6 +215,26 @@ namespace Web.NINAPlugin {
             imageSaveWatcher.Stop();
             eventWatcher.Stop(addStopEvent);
             autofocusEventWatcher.Stop();
+        }
+
+        private bool lastNINARunning() {
+            try {
+                string ninaProcessName = Process.GetCurrentProcess().ProcessName;
+                Process[] ninaProcesses = Process.GetProcessesByName(ninaProcessName);
+
+                if (ninaProcesses.Length == 1) {
+                    Logger.Debug("Last NINA running, Web viewer session clean up ...");
+                    return true;
+                }
+                else {
+                    Logger.Debug("Not the last NINA running, Web viewer skipping session clean up");
+                    return false;
+                }
+            }
+            catch (Exception e) {
+                Logger.Warning($"exception determining running NINA instances: {e.Message}");
+                return false;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
