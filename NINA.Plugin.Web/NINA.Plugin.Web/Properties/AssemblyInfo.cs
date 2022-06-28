@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.1.2.0")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "2.0.0.2059")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "2.0.0.9001")]
 
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
