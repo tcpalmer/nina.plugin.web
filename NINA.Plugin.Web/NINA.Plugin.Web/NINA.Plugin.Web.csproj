@@ -341,22 +341,24 @@
   <Import Project="..\packages\Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net48.targets" Condition="Exists('..\packages\Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.0\build\Microsoft.NETFramework.ReferenceAssemblies.net48.targets')" />
   <Import Project="..\packages\VVVV.FreeImage.3.15.1.1\build\net40\VVVV.FreeImage.targets" Condition="Exists('..\packages\VVVV.FreeImage.3.15.1.1\build\net40\VVVV.FreeImage.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>if not exist "%25localappdata%25\NINA\Plugins" (
-      echo "Creating $(PlatformName) Plugins folder"
-      mkdir  "%25localappdata%25\NINA\Plugins"
-      )
-      if not exist "%25localappdata%25\NINA\Plugin\$(TargetName)" (
-      echo "Creating $(PlatformName) Plugins $(TargetName) folder"
-      mkdir  "%25localappdata%25\NINA\Plugins\$(TargetName)"
-      )
+    <PostBuildEvent>
+		if not exist "%25localappdata%25\NINA\Plugins" (
+		echo "Creating $(PlatformName) Plugins folder"
+		mkdir  "%25localappdata%25\NINA\Plugins"
+		)
+		if not exist "%25localappdata%25\NINA\Plugins\$(TargetName)" (
+		echo "Creating $(PlatformName) Plugins $(TargetName) folder"
+		mkdir  "%25localappdata%25\NINA\Plugins\$(TargetName)"
+		)
 
-      echo "Copying $(PlatformName) $(TargetFileName)"
-      xcopy "$(TargetPath)" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
-      xcopy "$(TargetDir)EmbedIO.dll" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
-      xcopy "$(TargetDir)Swan.Lite.dll" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
+		echo "Plugin installation directory: %25localappdata%25\NINA\Plugins\$(TargetName)"
+		echo "Copying $(PlatformName) $(TargetFileName)"
+		xcopy "$(TargetPath)" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
+		xcopy "$(TargetDir)EmbedIO.dll" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
+		xcopy "$(TargetDir)Swan.Lite.dll" "%25localappdata%25\NINA\Plugins\$(TargetName)" /h/i/c/k/e/r/y
 
-      move "%25localappdata%25\NINA\Plugins\$(TargetName)" "%25localappdata%25\NINA\Plugins\Web Session History Viewer"
-</PostBuildEvent>
+		move "%25localappdata%25\NINA\Plugins\$(TargetName)" "%25localappdata%25\NINA\Plugins\Web Session History Viewer"
+	</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Google.Protobuf.Tools.3.18.1\build\Google.Protobuf.Tools.targets" Condition="Exists('..\packages\Google.Protobuf.Tools.3.18.1\build\Google.Protobuf.Tools.targets')" />
   <PropertyGroup>

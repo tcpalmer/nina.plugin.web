@@ -1,4 +1,5 @@
-﻿using NINA.Image.ImageData;
+﻿using NINA.Core.Utility;
+using NINA.Image.ImageData;
 using NINA.Profile.Interfaces;
 using NINA.WPF.Base.Interfaces.Mediator;
 using System;
@@ -145,7 +146,7 @@ namespace Web.NINAPlugin.History {
         public ImageRecord(ImageSavedEventArgs msg) {
             id = Guid.NewGuid().ToString();
             fileName = GetFileName(msg.PathToImage);
-            fullPath = HttpUtility.UrlDecode(msg.PathToImage.AbsolutePath);
+            fullPath = msg.PathToImage.LocalPath;
 
             started = msg.MetaData.Image.ExposureStart;
             epochMilliseconds = new DateTimeOffset(started).ToUnixTimeMilliseconds();
