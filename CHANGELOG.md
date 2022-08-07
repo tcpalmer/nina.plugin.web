@@ -1,6 +1,6 @@
 # Web Session History Viewer
 
-## 1.1.2.1 - 2022-07-25
+## 1.1.2.1 - 2022-08-07
 * Plugin options are now saved per NINA profile
 * Now supports running another instance of NINA in 'share' mode
 * Web server will now automatically redirect root path requests
