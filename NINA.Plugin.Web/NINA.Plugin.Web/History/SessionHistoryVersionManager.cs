@@ -29,7 +29,6 @@ namespace Web.NINAPlugin.History {
             if (flushThread != null) {
                 stopped = true;
                 flushQueue();
-                flushThread.Abort();
                 flushThread = null;
             }
         }

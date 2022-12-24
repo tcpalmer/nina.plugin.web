@@ -1,5 +1,8 @@
 # Web Session History Viewer
 
+## 2.1.2.1 - 2022-12-24
+* Migrated to .NET 7 for NINA 3
+
 ## 1.1.2.1 - 2022-08-07
 * Plugin options are now saved per NINA profile
 * Now supports running another instance of NINA in 'share' mode

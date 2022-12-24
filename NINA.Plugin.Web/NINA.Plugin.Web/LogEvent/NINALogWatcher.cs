@@ -35,7 +35,6 @@ namespace Web.NINAPlugin.LogEvent {
             if (watcherThread != null) {
                 Logger.Debug("web viewer: stopping log watcher");
                 stopped = true;
-                watcherThread.Abort();
                 watcherThread = null;
             }
         }
