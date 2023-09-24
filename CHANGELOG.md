@@ -1,5 +1,8 @@
 # Web Session History Viewer
 
+## 2.1.3.0 - 2023-09-24
+* Support for new NINA rolling log files.
+
 ## 2.1.2.1 - 2022-12-24
 * Migrated to .NET 7 for NINA 3
 

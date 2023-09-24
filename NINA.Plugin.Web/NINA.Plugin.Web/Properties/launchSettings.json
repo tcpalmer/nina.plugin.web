@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "NINA.Plugin.Web": {
+      "commandName": "Project"
+    },
+    "NINA": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\Tom\\source\\repos\\nina\\NINA\\bin\\Debug\\net7.0-windows\\NINA.exe"
+    }
+  }
+}
