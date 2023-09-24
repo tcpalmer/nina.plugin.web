@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Web.NINAPlugin.Utility;
 
 namespace Web.NINAPlugin.LogEvent {
 
@@ -17,7 +18,7 @@ namespace Web.NINAPlugin.LogEvent {
 
         public NINALogWatcher(NINALogMessageProcessor processor) {
             this.processor = processor;
-            this.logDirectory = Path.Combine(CoreUtil.APPLICATIONTEMPPATH, "Logs");
+            this.logDirectory = LogUtils.GetLogDirectory();
             this.activeLogFile = getActiveLogFile(logDirectory);
         }
 
@@ -91,14 +92,11 @@ namespace Web.NINAPlugin.LogEvent {
         }
 
         private string getActiveLogFile(string logDirectory) {
-            // NINA log files match yyyyMMdd-HHmmss-VERSION.PID.log - see NINA.Core.Utility.Logger
 
             try {
-                string version = CoreUtil.Version;
-                int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-                Regex re = new Regex(@"^\d{8}-\d{6}-" + $"{version}.{processId}.log$", RegexOptions.Compiled);
-
+                Regex re = new Regex(LogUtils.GetLogFileRE(), RegexOptions.Compiled);
                 List<string> fileList = new List<string>(Directory.GetFiles(logDirectory));
+
                 foreach (string file in fileList) {
                     if (re.IsMatch(Path.GetFileName(file))) {
                         return file;
