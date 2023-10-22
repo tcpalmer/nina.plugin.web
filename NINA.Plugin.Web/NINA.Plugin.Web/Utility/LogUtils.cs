@@ -15,9 +15,8 @@ namespace Web.NINAPlugin.Utility {
             // Note that daily log file rolling was added in Sept 2023 - that added the '-yyyyMMdd' to the end.
 
             string version = CoreUtil.Version;
-            int processId = System.Diagnostics.Process.GetCurrentProcess().Id;
-            string logDate = DateTime.Now.ToString("yyyyMMdd");
-            return @"^\d{8}-\d{6}-" + $"{version}.{processId}-{logDate}.log$";
+            int processId = Environment.ProcessId;
+            return @"^\d{8}-\d{6}-" + $"{version}.{processId}" + @"-\d{8}.log$";
         }
 
         private LogUtils() { }

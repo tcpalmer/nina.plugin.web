@@ -1,5 +1,8 @@
 # Web Session History Viewer
 
+## 2.1.4.0 - 2023-10-22
+* Support for new NINA rolling log files (revised log name matching).
+
 ## 2.1.3.0 - 2023-09-24
 * Support for new NINA rolling log files.
 

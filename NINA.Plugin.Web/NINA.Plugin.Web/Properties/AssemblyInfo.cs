@@ -12,8 +12,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("2.1.3.0")]
-[assembly: AssemblyFileVersion("2.1.3.0")]
+[assembly: AssemblyVersion("2.1.4.0")]
+[assembly: AssemblyFileVersion("2.1.4.0")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
 [assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.1032")]
