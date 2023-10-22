@@ -12,11 +12,11 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("1.1.2.1")]
-[assembly: AssemblyFileVersion("1.1.2.1")]
+[assembly: AssemblyVersion("2.1.4.0")]
+[assembly: AssemblyFileVersion("2.1.4.0")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "2.0.0.9001")]
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.1032")]
 
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
@@ -59,8 +59,8 @@ Only use SHARE if you're running a second instance of NINA on the same computer.
 ## Network Notes ##
 
 If you only want to use the Web app from a browser running directly on the computer running NINA, you're all set.  However, you can also use the Web app from any device on your local network.  To do so it's usually sufficient to configure NINA to communicate through your firewall:
-* Open Settings and search for Windows Defender Firewall
-* Click 'Allow an app or feature through Windows Defender Firewall'
+* Open Settings and search for Windows Defender Firewall.
+* Click 'Allow an app or feature through Windows Defender Firewall'.
 * Ensure NINA is enabled, at least for your private network.
 
 If you configure your local network so that this IP is static (typically on your router), then the IP address URL will stay constant.  Otherwise it will change if this computer is assigned a new IP.
@@ -70,12 +70,11 @@ In addition to the URLs shown above, you should be able to use any domain name t
 If this doesn't work you'll need to search around and figure it out - anything else is beyond the scope of this.
 
 # Getting Help #
-* Ask for help in the #plugin-discussions channel on the NINA project [Discord server](https://discord.com/invite/rWRbVbw).
-* [Plugin source code](https://github.com/tcpalmer/nina.plugin.web)
-* [Web client source code](https://github.com/tcpalmer/nina.plugin.web.client)
-* [Change log](https://github.com/tcpalmer/nina.plugin.web/blob/main/CHANGELOG.md)
+* Ask for help (tag @tcpalmer) in the #plugin-discussions channel on the NINA project [Discord server](https://discord.com/invite/rWRbVbw).
+* [Plugin source code](https://github.com/tcpalmer/nina.plugin.web).
+* [Web client source code](https://github.com/tcpalmer/nina.plugin.web.client).
+* [Change log](https://github.com/tcpalmer/nina.plugin.web/blob/main/CHANGELOG.md).
 
-The Web Session History Viewer is provided 'as is' under the terms of the [Mozilla Public License 2.0](https://github.com/tcpalmer/nina.plugin.web/blob/main/LICENSE.txt)
-")]
+The Web Session History Viewer is provided 'as is' under the terms of the [Mozilla Public License 2.0](https://github.com/tcpalmer/nina.plugin.web/blob/main/LICENSE.txt)")]
 
 [assembly: ComVisible(false)]

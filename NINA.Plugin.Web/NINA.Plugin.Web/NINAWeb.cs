@@ -289,9 +289,14 @@ namespace Web.NINAPlugin {
             if (WebPluginStateCurrent.Equals(WebPluginStateON)) {
                 // ON -> OFF: stop server and watchers
                 if (WebPluginState.Equals(WebPluginStateOFF)) {
-                    HttpServerInstance.Stop();
-                    stopAllWatchers(false);
-                    Notification.ShowSuccess($"Web plugin in OFF mode");
+                    try {
+                        HttpServerInstance.Stop();
+                        stopAllWatchers(false);
+                        Notification.ShowSuccess($"Web plugin in OFF mode");
+                    }
+                    catch (Exception ex) {
+                        Logger.Error($"exception stopping web server: {ex.ToString()}");
+                    }
                     return;
                 }
 

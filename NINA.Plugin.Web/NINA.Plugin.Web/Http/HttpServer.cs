@@ -63,6 +63,7 @@ namespace Web.NINAPlugin.Http {
 
             try {
                 using (webServer = CreateWebServer()) {
+                    webServerToken?.Dispose();
                     webServerToken = new CancellationTokenSource();
                     Notification.ShowSuccess($"Web server started, listening at {localUrl}");
                     webServer.RunAsync(webServerToken.Token).Wait();
@@ -70,10 +71,7 @@ namespace Web.NINAPlugin.Http {
             }
             catch (Exception ex) {
                 NINA.Core.Utility.Logger.Error($"failed to start web server: {ex}");
-                Notification.ShowError($"Failed to start web server, see NINA log for details");
-
-                NINA.Core.Utility.Logger.Debug("aborting web server thread");
-                serverThread.Abort();
+                WaitForStopped(false);
             }
         }
 
@@ -88,15 +86,29 @@ namespace Web.NINAPlugin.Http {
                     }
                 }
 
-                if (serverThread != null && serverThread.IsAlive) {
-                    serverThread.Abort();
-                    serverThread = null;
-                }
-
-                Notification.ShowSuccess($"Web server stopped");
+                WaitForStopped(true);
             }
             catch (Exception ex) {
                 NINA.Core.Utility.Logger.Error($"failed to stop web server: {ex}");
+            }
+        }
+
+        private void WaitForStopped(bool showStoppedNotification) {
+            int totalWait = 0;
+            while (serverThread != null && serverThread.IsAlive && totalWait < 2000) {
+                Thread.Sleep(50);
+                totalWait += 50;
+            }
+
+            if (totalWait == 2000) {
+                Notification.ShowError($"Failed to stop web server, see NINA log for details");
+                NINA.Core.Utility.Logger.Error("failed to stop web server, waited 2s");
+            }
+            else {
+                NINA.Core.Utility.Logger.Info($"waited {totalWait}ms for web server to stop");
+                if (showStoppedNotification) {
+                    Notification.ShowSuccess($"Web server stopped");
+                }
             }
         }
 
