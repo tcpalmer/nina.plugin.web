@@ -2,29 +2,25 @@
 using System.Runtime.InteropServices;
 
 [assembly: Guid("81B04674-EA65-4FE8-B79B-A77C1D209183")]
-
 [assembly: AssemblyTitle("Web Session History Viewer")]
 [assembly: AssemblyDescription("Embedded Web server and app providing acquisition session history details")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Tom Palmer @tcpalmer")]
 [assembly: AssemblyProduct("Web Session History Viewer")]
-[assembly: AssemblyCopyright("Copyright © 2022")]
+[assembly: AssemblyCopyright("Copyright © 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-
 [assembly: AssemblyVersion("2.2.0.0")]
 [assembly: AssemblyFileVersion("2.2.0.0")]
 
 // The minimum Version of N.I.N.A. that this plugin is compatible with
-[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.2017")]
-
+[assembly: AssemblyMetadata("MinimumApplicationVersion", "3.0.0.2001")]
 [assembly: AssemblyMetadata("License", "MPL-2.0")]
 [assembly: AssemblyMetadata("LicenseURL", "https://www.mozilla.org/en-US/MPL/2.0/")]
 [assembly: AssemblyMetadata("Repository", "https://github.com/tcpalmer/nina.plugin.web/")]
 [assembly: AssemblyMetadata("FeaturedImageURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/web-plugin-icon.png?raw=true")]
 [assembly: AssemblyMetadata("ScreenshotURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/screenshot1-1100.png?raw=true")]
 [assembly: AssemblyMetadata("AltScreenshotURL", "https://raw.githubusercontent.com/tcpalmer/nina.plugin.web/main/NINA.Plugin.Web/assets/screenshot2-1100.png?raw=true")]
-
 [assembly: AssemblyMetadata("LongDescription", @"The Web Session History Viewer embeds a lightweight Web server that will provide access to details associated with your acquisition sessions.  A custom Web app is included to present the data.  If NINA is running and the plugin is enabled, you can view details from the current ('live') session as well as past sessions from any device on your local network.
 
 The actual URLs to access the Web app will be displayed above once the plugin is installed.  The IP Address URL will use the IP of the computer running NINA.  Assuming this IP/port are available on your local network, any device (e.g. phone or tablet) can connect.  See network notes below.
@@ -49,7 +45,7 @@ Only use SHARE if you're running a second instance of NINA on the same computer.
 * As new images are saved, they will appear in the panel for the active target, in a table below the quality plot.  By default, the app will sort the images newest first so the latest image always appears at the top.  However, if you change the table sort order, the latest could appear anywhere depending on the sort column.
 * Click an image thumbnail to see a full-size version of the image (assuming you haven't moved or deleted the original).  Use the mouse wheel to zoom in/out.  Pinch also works on touch-enabled devices.
 * If the session has multiple targets, they will be presented in separate sections under the session.  Click the target name to open/close the target details.
-* There will only be one session history file for each run of NINA.  Disabling and enabling the plugin itself won't start a new session. 
+* There will only be one session history file for each run of NINA.  Disabling and enabling the plugin itself won't start a new session.
 * Click the Console menu to see app status messages.  If this button changes color, click to see what the problem is.  The most common issue is that the Web app is still running but the plugin was disabled or NINA was stopped.  In that case, just close the browser window/tab.
 * Click the Help menu to see help for the Web app.
 * Click the Settings icon to adjust the settings that control the quality and stretch of the full-sized images.

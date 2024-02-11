@@ -144,12 +144,14 @@ namespace Web.NINAPlugin.History {
 
         public void RemoveEmptySessions() {
             SessionList sessionList = GetSessionList();
+            Logger.Trace("Web viewer removing empty sessions ...");
+
             foreach (Session session in sessionList.sessions) {
+                Logger.Trace($"    session {session.key}");
                 SessionHistory sessionHistory = null;
                 try {
                     sessionHistory = ReadOldSessionHistory(session.key);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Logger.Debug($"failed to read old session history, removing: {session.key} ({e.Message})");
                     DeleteSession(session);
                     sessionHistory = null;
@@ -165,13 +167,14 @@ namespace Web.NINAPlugin.History {
         }
 
         public void DeactivateOldSessions() {
+            Logger.Trace($"Web viewer deactivating old sessions ...");
             SessionList sessionList = GetSessionList();
             foreach (Session session in sessionList.sessions) {
+                Logger.Trace($"    session {session.key}");
                 SessionHistory sessionHistory = null;
                 try {
                     sessionHistory = ReadOldSessionHistory(session.key);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Logger.Warning($"failed to read previous session history {session.key}, skipping: {e.Message}");
                 }
 
@@ -210,25 +213,32 @@ namespace Web.NINAPlugin.History {
 
         private void DeleteSession(Session session) {
             string sessionDir = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, session.key);
+            Logger.Trace($"Web viewer deleting session {sessionDir}");
             Directory.Delete(sessionDir, true);
         }
 
         private SessionHistory ReadOldSessionHistory(string key) {
             string sessionJsonFile = Path.Combine(webServerRoot, HttpSetup.SESSIONS_ROOT, key, HttpSetup.SESSION_JSON_NAME);
+            Logger.Trace($"    reading session from {sessionJsonFile}");
             return JsonUtils.ReadJson<SessionHistory>(sessionJsonFile);
         }
 
         private string WriteOldSessionHistory(SessionHistory sessionHistory) {
             string sessionHome = GetSessionHome(sessionHistory);
             string sessionJsonFile = Path.Combine(sessionHome, HttpSetup.SESSION_JSON_NAME);
+            Logger.Trace($"Web viewer writing old session history, home={sessionHome}, json file={sessionJsonFile}");
 
             string tempFile = Path.GetTempFileName();
+            Logger.Trace($"Web viewer writing old session history, temp file={tempFile}");
+
             JsonUtils.WriteJson(sessionHistory, tempFile, true);
 
             if (File.Exists(sessionJsonFile)) {
+                Logger.Trace($"Web viewer writing old session history, removing old json={sessionJsonFile}");
                 File.Delete(sessionJsonFile);
             }
 
+            Logger.Trace($"Web viewer writing old session history, moving json file {tempFile} -> {sessionJsonFile}");
             File.Move(tempFile, sessionJsonFile);
             return sessionHome;
         }
