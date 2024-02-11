@@ -45,7 +45,7 @@ Only use SHARE if you're running a second instance of NINA on the same computer.
 * As new images are saved, they will appear in the panel for the active target, in a table below the quality plot.  By default, the app will sort the images newest first so the latest image always appears at the top.  However, if you change the table sort order, the latest could appear anywhere depending on the sort column.
 * Click an image thumbnail to see a full-size version of the image (assuming you haven't moved or deleted the original).  Use the mouse wheel to zoom in/out.  Pinch also works on touch-enabled devices.
 * If the session has multiple targets, they will be presented in separate sections under the session.  Click the target name to open/close the target details.
-* There will only be one session history file for each run of NINA.  Disabling and enabling the plugin itself won't start a new session.
+* There will only be one session history file for each run of NINA.  Disabling and enabling the plugin itself won't start a new session. 
 * Click the Console menu to see app status messages.  If this button changes color, click to see what the problem is.  The most common issue is that the Web app is still running but the plugin was disabled or NINA was stopped.  In that case, just close the browser window/tab.
 * Click the Help menu to see help for the Web app.
 * Click the Settings icon to adjust the settings that control the quality and stretch of the full-sized images.
