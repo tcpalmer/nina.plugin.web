@@ -63,8 +63,7 @@ namespace Web.NINAPlugin {
 
             try {
                 UpdateSessionHistory(msg);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Logger.Error($"exception updating session status for web viewer: {ex.Message} {ex.StackTrace}");
             }
         }
@@ -82,7 +81,6 @@ namespace Web.NINAPlugin {
                 case CaptureSequence.ImageTypes.LIGHT:
                 case CaptureSequence.ImageTypes.FLAT:
                 case CaptureSequence.ImageTypes.DARK:
-                case CaptureSequence.ImageTypes.DARKFLAT:
                     return true;
 
                 case CaptureSequence.ImageTypes.BIAS:

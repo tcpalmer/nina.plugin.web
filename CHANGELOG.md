@@ -1,5 +1,8 @@
 # Web Session History Viewer
 
+## 2.2.0.0 - 2024-02-11
+* .NET 8 and NINA plugin package updates
+
 ## 2.1.4.0 - 2023-10-22
 * Support for new NINA rolling log files (revised log name matching).
 
