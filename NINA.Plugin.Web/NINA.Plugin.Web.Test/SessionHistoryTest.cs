@@ -6,8 +6,8 @@ using System;
 using Web.NINAPlugin.History;
 
 namespace Web.NINAPlugin.Test {
-    public class SessionHistoryTests {
 
+    public class SessionHistoryTests {
         private Mock<IProfileService> profileServiceMock = new Mock<IProfileService>();
 
         [SetUp]
@@ -39,7 +39,7 @@ namespace Web.NINAPlugin.Test {
             ImageRecord r1 = new ImageRecord(TestHelper.GetImageSavedEventArgs(DateTime.Now));
             r1.id.Should().NotBeNull();
             r1.fileName.Should().Be("bar.fits");
-            r1.fullPath.Should().Be("C:/foo/yoyo/bar.fits");
+            r1.fullPath.Should().Be("C:\\foo\\yoyo\\bar.fits");
             r1.duration.Should().Be(11.0);
             r1.filterName.Should().Be("Foo");
             r1.detectedStars.Should().Be(1234);
@@ -56,6 +56,5 @@ namespace Web.NINAPlugin.Test {
             sut.activeTargetId.Should().Be(t1.id);
             sut.targets.Count.Should().Be(1);
         }
-
     }
 }
