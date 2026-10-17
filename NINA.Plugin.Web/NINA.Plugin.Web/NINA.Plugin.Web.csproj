@@ -21,6 +21,8 @@
     <Reference Include="System.Windows" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.11.0" />
+    <PackageReference Include="Moq" Version="4.21.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
@@ -29,8 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dirkster.AvalonDock" Version="4.60.0" />
-    <PackageReference Include="EmbedIO" Version="3.4.3" />
-    <PackageReference Include="NINA.Plugin" Version="3.0.0.2017-beta" />
+    <PackageReference Include="EmbedIO" Version="3.5.2" />
+    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
     <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +57,6 @@
     </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="  if not exist &quot;%25localappdata%25\NINA\Plugins&quot; (&#xD;&#xA;  echo &quot;Creating $(PlatformName) Plugins folder&quot;&#xD;&#xA;  mkdir  &quot;%25localappdata%25\NINA\Plugins&quot;&#xD;&#xA;  )&#xD;&#xA;  if not exist &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; (&#xD;&#xA;  echo &quot;Creating $(PlatformName) Plugins $(TargetName) folder&quot;&#xD;&#xA;  mkdir  &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot;&#xD;&#xA;  )&#xD;&#xA;&#xD;&#xA;  echo &quot;Plugin installation directory: %25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot;&#xD;&#xA;  echo &quot;Copying $(PlatformName) $(TargetFileName)&quot;&#xD;&#xA;  xcopy &quot;$(TargetPath)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;  xcopy &quot;$(TargetDir)EmbedIO.dll&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;  xcopy &quot;$(TargetDir)Swan.Lite.dll&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;&#xD;&#xA;  move &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\Web Session History Viewer&quot;&#xD;&#xA;" />
+    <Exec Command="  if not exist &quot;%25localappdata%25\NINA\Plugins&quot; (&#xD;&#xA;  echo &quot;Creating $(PlatformName) Plugins folder&quot;&#xD;&#xA;  mkdir  &quot;%25localappdata%25\NINA\Plugins&quot;&#xD;&#xA;  )&#xD;&#xA;  if not exist &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; (&#xD;&#xA;  echo &quot;Creating $(PlatformName) Plugins $(TargetName) folder&quot;&#xD;&#xA;  mkdir  &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot;&#xD;&#xA;  )&#xD;&#xA;&#xD;&#xA;  echo &quot;Plugin installation directory: %25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot;&#xD;&#xA;  echo &quot;Copying $(PlatformName) $(TargetFileName)&quot;&#xD;&#xA;  xcopy &quot;$(TargetPath)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;  xcopy &quot;$(TargetDir)EmbedIO.dll&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;  xcopy &quot;$(TargetDir)Swan.Lite.dll&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; /h/i/c/k/e/r/y&#xD;&#xA;&#xD;&#xA;  echo &quot;Fetching web client dist&quot;&#xD;&#xA;  powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)build\GetClientDist.ps1&quot; -PluginDir &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot;&#xD;&#xA;  if errorlevel 1 exit 1&#xD;&#xA;&#xD;&#xA;  echo &quot;Removing unneeded localization and runtime folders&quot;&#xD;&#xA;  for %25%25d in (ca-ES cs cs-CZ da-DK de de-DE el-GR en-GB en-US es es-ES eu-ES fr fr-FR gl-ES hu-HU it it-IT ja ja-JP ko ko-KR nb-NO nl-NL pl pl-PL pt-BR pt-PT ru ru-RU tr tr-TR uk-UA zh-CN zh-HK zh-Hans zh-Hant zh-TW hu nl-BE pt ro sv runtimes) do if exist &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)\%25%25d&quot; RD /S /Q &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)\%25%25d&quot;&#xD;&#xA;&#xD;&#xA;  move &quot;%25localappdata%25\NINA\Plugins\3.0.0\$(TargetName)&quot; &quot;%25localappdata%25\NINA\Plugins\3.0.0\Web Session History Viewer&quot;&#xD;&#xA;" />
   </Target>
 </Project>

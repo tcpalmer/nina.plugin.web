@@ -1,5 +1,9 @@
 # Web Session History Viewer
 
+## 2.3.0.0 - 2026-10-18
+* Updated NINA packages to 3.2.0.9001.
+* Updated the web client code components to latest.
+
 ## 2.2.0.0 - 2024-02-11
 * .NET 8 and NINA plugin package updates
 

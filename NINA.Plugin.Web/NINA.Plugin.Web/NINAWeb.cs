@@ -1,5 +1,6 @@
 ﻿using NINA.Core.Utility;
 using NINA.Core.Utility.Notification;
+using NINA.Equipment.Interfaces.Mediator;
 using NINA.Image.Interfaces;
 using NINA.Plugin;
 using NINA.Plugin.Interfaces;
@@ -38,7 +39,7 @@ namespace Web.NINAPlugin {
         private IPluginOptionsAccessor pluginSettings;
 
         [ImportingConstructor]
-        public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory) {
+        public WebPlugin(IProfileService profileService, IImageSaveMediator imageSaveMediator, IImageDataFactory imageDataFactory, IFocuserMediator focuserMediator) {
             if (Properties.Settings.Default.UpdateSettings) {
                 Properties.Settings.Default.Upgrade();
                 Properties.Settings.Default.UpdateSettings = false;
@@ -50,13 +51,13 @@ namespace Web.NINAPlugin {
 
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
 
-            bool initStatus = InitializePlugin(imageSaveMediator, profileService);
+            bool initStatus = InitializePlugin(imageSaveMediator, profileService, focuserMediator);
             if (!initStatus) {
                 throw new Exception("failed to initialize the web session history viewer plugin");
             }
         }
 
-        private bool InitializePlugin(IImageSaveMediator imageSaveMediator, IProfileService profileService) {
+        private bool InitializePlugin(IImageSaveMediator imageSaveMediator, IProfileService profileService, IFocuserMediator focuserMediator) {
             try {
                 setWebUrls();
                 new HttpSetup().Initialize();
@@ -68,13 +69,14 @@ namespace Web.NINAPlugin {
 
                 this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator, pluginSettings);
                 this.eventWatcher = new NINAEventWatcher();
-                this.autofocusEventWatcher = new AutofocusEventWatcher();
+                focuserMediator.RegisterConsumer(new AutoFocuserConsumer());
+                // this.autofocusEventWatcher = new AutofocusEventWatcher();
 
                 // Create a new session history for this run
                 string sessionHome = sessionHistoryManager.StartNewSessionHistory(profileService);
                 imageSaveWatcher.setSessionHome(sessionHome);
                 eventWatcher.setSessionHome(sessionHome);
-                autofocusEventWatcher.setSessionHome(sessionHome);
+                // autofocusEventWatcher.setSessionHome(sessionHome);
                 sessionHistoryManager.InitializeSessionList();
 
                 if (isPluginActive()) {
@@ -83,12 +85,10 @@ namespace Web.NINAPlugin {
                 }
 
                 return true;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 try {
                     stopAllWatchers(false);
-                }
-                catch (Exception) { }
+                } catch (Exception) { }
 
                 Logger.Error($"failed to initialize the web plugin: {ex} {ex.Source}, aborting");
                 return false;
@@ -111,8 +111,7 @@ namespace Web.NINAPlugin {
                     sessionHistoryManager.RemoveEmptySessions();
                     sessionHistoryManager.DeactivateOldSessions();
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Logger.Error($"failed to stop web server or event watchers at teardown time: {ex}");
             }
 
@@ -208,13 +207,13 @@ namespace Web.NINAPlugin {
         private void startAllWatchers() {
             imageSaveWatcher.Start();
             eventWatcher.Start();
-            autofocusEventWatcher.Start();
+            // autofocusEventWatcher.Start();
         }
 
         private void stopAllWatchers(bool addStopEvent) {
-            imageSaveWatcher.Stop();
-            eventWatcher.Stop(addStopEvent);
-            autofocusEventWatcher.Stop();
+            imageSaveWatcher?.Stop();
+            eventWatcher?.Stop(addStopEvent);
+            //autofocusEventWatcher.Stop();
         }
 
         private bool lastNINARunning() {
@@ -225,13 +224,11 @@ namespace Web.NINAPlugin {
                 if (ninaProcesses.Length == 1) {
                     Logger.Debug("Last NINA running, Web viewer session clean up ...");
                     return true;
-                }
-                else {
+                } else {
                     Logger.Debug("Not the last NINA running, Web viewer skipping session clean up");
                     return false;
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Logger.Warning($"exception determining running NINA instances: {e.Message}");
                 return false;
             }
@@ -293,8 +290,7 @@ namespace Web.NINAPlugin {
                         HttpServerInstance.Stop();
                         stopAllWatchers(false);
                         Notification.ShowSuccess($"Web plugin in OFF mode");
-                    }
-                    catch (Exception ex) {
+                    } catch (Exception ex) {
                         Logger.Error($"exception stopping web server: {ex.ToString()}");
                     }
                     return;
