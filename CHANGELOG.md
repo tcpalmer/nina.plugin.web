@@ -1,6 +1,7 @@
 # Web Session History Viewer
 
 ## 2.3.0.0 - 2026-10-18
+* Fix for autofocus read failure.
 * Updated NINA packages to 3.2.0.9001.
 * Updated the web client code components to latest.
 

@@ -51,13 +51,13 @@ namespace Web.NINAPlugin {
 
             HttpServerInstance.SetImageDataFactory(imageDataFactory);
 
-            bool initStatus = InitializePlugin(imageSaveMediator, profileService, focuserMediator);
+            bool initStatus = InitializePlugin(imageSaveMediator, profileService);
             if (!initStatus) {
                 throw new Exception("failed to initialize the web session history viewer plugin");
             }
         }
 
-        private bool InitializePlugin(IImageSaveMediator imageSaveMediator, IProfileService profileService, IFocuserMediator focuserMediator) {
+        private bool InitializePlugin(IImageSaveMediator imageSaveMediator, IProfileService profileService) {
             try {
                 setWebUrls();
                 new HttpSetup().Initialize();
@@ -69,14 +69,13 @@ namespace Web.NINAPlugin {
 
                 this.imageSaveWatcher = new ImageSaveWatcher(imageSaveMediator, pluginSettings);
                 this.eventWatcher = new NINAEventWatcher();
-                focuserMediator.RegisterConsumer(new AutoFocuserConsumer());
-                // this.autofocusEventWatcher = new AutofocusEventWatcher();
+                this.autofocusEventWatcher = new AutofocusEventWatcher();
 
                 // Create a new session history for this run
                 string sessionHome = sessionHistoryManager.StartNewSessionHistory(profileService);
                 imageSaveWatcher.setSessionHome(sessionHome);
                 eventWatcher.setSessionHome(sessionHome);
-                // autofocusEventWatcher.setSessionHome(sessionHome);
+                autofocusEventWatcher.setSessionHome(sessionHome);
                 sessionHistoryManager.InitializeSessionList();
 
                 if (isPluginActive()) {
@@ -207,13 +206,13 @@ namespace Web.NINAPlugin {
         private void startAllWatchers() {
             imageSaveWatcher.Start();
             eventWatcher.Start();
-            // autofocusEventWatcher.Start();
+            autofocusEventWatcher.Start();
         }
 
         private void stopAllWatchers(bool addStopEvent) {
             imageSaveWatcher?.Stop();
             eventWatcher?.Stop(addStopEvent);
-            //autofocusEventWatcher.Stop();
+            autofocusEventWatcher.Stop();
         }
 
         private bool lastNINARunning() {
