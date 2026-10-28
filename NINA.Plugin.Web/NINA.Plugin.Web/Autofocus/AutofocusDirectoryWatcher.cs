@@ -20,7 +20,8 @@ namespace Web.NINAPlugin.Autofocus {
         public void Stop() {
             if (fsWatcher != null) {
                 Logger.Debug("web viewer: stopping AF directory watcher");
-                fsWatcher.Changed -= OnChanged;
+                fsWatcher.Created -= OnCreated;
+                fsWatcher.Renamed -= OnRenamed;
                 fsWatcher.EnableRaisingEvents = false;
                 fsWatcher.Dispose();
                 fsWatcher = null;
@@ -31,21 +32,31 @@ namespace Web.NINAPlugin.Autofocus {
             Logger.Info($"web viewer: watching AF directory file: {afDirectory}");
 
             try {
-                fsWatcher = new FileSystemWatcher(afDirectory);
-                fsWatcher.NotifyFilter = NotifyFilters.LastWrite;
-                fsWatcher.Filter = "*.json";
-                fsWatcher.Changed += OnChanged;
+                fsWatcher = new FileSystemWatcher(afDirectory) {
+                    NotifyFilter = NotifyFilters.FileName,
+                    Filter = "*.json"
+                };
+
+                fsWatcher.Created += OnCreated;
+                fsWatcher.Renamed += OnRenamed;
                 fsWatcher.EnableRaisingEvents = true;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Logger.Warning($"failed to watch AF directory for web viewer: {e.Message} {e.StackTrace}");
             }
         }
 
         public event EventHandler<AutofocusEvent> AutofocusEventSaved;
 
-        private void OnChanged(object sender, FileSystemEventArgs e) {
+        private void OnCreated(object sender, FileSystemEventArgs e) {
+            Logger.Info("Web session viewer caught autofocus event (file created)");
             onAutofocusEvent(new AutofocusEvent(e.FullPath));
+        }
+
+        private void OnRenamed(object sender, RenamedEventArgs e) {
+            if (Path.GetExtension(e.FullPath).Equals(".json", StringComparison.OrdinalIgnoreCase)) {
+                Logger.Info("Web session viewer caught autofocus event (file renamed)");
+                onAutofocusEvent(new AutofocusEvent(e.FullPath));
+            }
         }
 
         public void onAutofocusEvent(AutofocusEvent e) {
