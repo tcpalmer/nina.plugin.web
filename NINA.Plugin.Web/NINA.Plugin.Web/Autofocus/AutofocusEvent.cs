@@ -16,6 +16,10 @@ namespace Web.NINAPlugin.Autofocus {
         public AutofocusEvent() {
         }
 
+        public AutofocusEvent(JObject json) {
+            this.raw = new JRaw(json.ToString(Formatting.None));
+        }
+
         public AutofocusEvent(string fileName) {
             Logger.Debug($"web viewer loading AF file {fileName}");
 

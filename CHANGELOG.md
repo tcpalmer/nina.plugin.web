@@ -1,5 +1,8 @@
 # Web Session History Viewer
 
+## 2.3.1.0 - 2026-10-29
+* Fixed problem with Hocus Focus run files being ignored.
+
 ## 2.3.0.0 - 2026-10-18
 * Fix for autofocus read failure.
 * Updated NINA packages to 3.2.0.9001.
