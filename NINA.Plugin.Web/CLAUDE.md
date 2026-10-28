@@ -119,7 +119,7 @@ Session JSON and thumbnails are not served through the API. The web client fetch
 
 ### Build and Local Install
 
-The post-build step in `NINA.Plugin.Web.csproj` copies `Web.NINAPlugin.dll`, `EmbedIO.dll` and `Swan.Lite.dll` to `%LOCALAPPDATA%\NINA\Plugins\3.0.0\Web.NINAPlugin`, then renames that folder to `Web Session History Viewer`. The rename fails if the destination folder already exists, so a stale install folder may need to be removed by hand. The post-build step does not copy the web client `dist` folder. It must already be in the plugin install folder, or `HttpSetup.Initialize()` will fail on version lookup.
+The post-build step in `NINA.Plugin.Web.csproj` copies `Web.NINAPlugin.dll`, `EmbedIO.dll` and `Swan.Lite.dll` to `%LOCALAPPDATA%\NINA\Plugins\3.0.0\Web.NINAPlugin`, then replaces any existing `Web Session History Viewer` folder with it: the old folder is renamed to `Web Session History Viewer.old` and deleted, and the new one is renamed into place. (A plain `move` onto an existing folder would nest the new build inside it, and NINA would keep loading the stale DLL.) If the old folder can't be renamed, typically because NINA is running and has files locked, the build fails and the installed plugin is left untouched. Before the rename, `build\GetClientDist.ps1` downloads the latest release of the web client from GitHub (tcpalmer/nina.plugin.web.client) and unpacks it into the install folder's `dist`, so a build needs network access. `HttpSetup.Initialize()` fails on version lookup if `dist` is missing.
 
 ### Testing
 
